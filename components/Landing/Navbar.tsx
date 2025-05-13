@@ -44,7 +44,7 @@ export const Navbar = () => {
                   className="mr-2"
                 />
                 <div className="flex mt-2">
-                  FlexIt <span className="text-blue-600">Out</span>.
+                  Fit <span className="text-blue-600">Vibe</span>
                 </div>
               </Link>
             </div>
@@ -94,7 +94,7 @@ export const Navbar = () => {
             <div className="hidden lg:flex lg:ml-16 lg:items-center lg:justify-center lg:space-x-10 xl:space-x-16">
             
               <a
-                href="https://github.com/Aryainguz/bajaj_flex-it-out"
+                href="https://github.com/Aryainguz/fitvibe"
                 className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
               >
                 Contribute

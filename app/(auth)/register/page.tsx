@@ -6,8 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Flex It Out | Register",
-  description: "Flex It Out",
+  title: "FitVibe | Register",
+  description: "FitVibe",
 };
 
 export default function RegisterPage() {

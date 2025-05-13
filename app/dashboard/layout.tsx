@@ -7,8 +7,8 @@ import { Outfit } from "next/font/google";
 const inter = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Flex It Out | Bajaj",
-  description: "Flex It Out",
+  title: "FitVibe | Bajaj",
+  description: "FitVibe",
 };
 
 export default function DashboardLayout({

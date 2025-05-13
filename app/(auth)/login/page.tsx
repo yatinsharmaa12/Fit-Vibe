@@ -6,8 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Flex It Out | Login",
-  description: "Flex It Out",
+  title: "FitVibe | Login",
+  description: "FitVibe",
 };
 
 
