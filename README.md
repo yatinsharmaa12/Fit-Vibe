@@ -1,6 +1,4 @@
-# FitVibe | Bajaj
-
-![Project Preview](./public/preview.png)
+# FitVibe
 
 ## Overview
 
