@@ -59,10 +59,12 @@ export function Sidebar() {
 
   const renderAvatar = (size = "h-10 w-10") => {
     return user.avatar ? (
-      <img
+      <Image
         src={user.avatar}
         alt="User Avatar"
-        className={`${size} rounded-full cursor-pointer`}
+        width={40}
+        height={40}
+        className={`${size} rounded-full cursor-pointer object-cover`}
         onClick={() => setProfileModalOpen(true)}
       />
     ) : (

@@ -3,7 +3,12 @@ import { Float, Environment, OrbitControls } from '@react-three/drei';
 import { useRef } from 'react';
 import * as THREE from 'three';
 
-function Dumbbell({ position = [0, 0, 0], color = '#FFD600' }) {
+interface ComponentProps {
+  position?: [number, number, number];
+  color?: string;
+}
+
+function Dumbbell({ position = [0, 0, 0], color = '#FFD600' }: ComponentProps) {
   // Dumbbell: two spheres and a cylinder
   return (
     <group position={position}>
@@ -26,7 +31,7 @@ function Dumbbell({ position = [0, 0, 0], color = '#FFD600' }) {
   );
 }
 
-function Kettlebell({ position = [0, 0, 0], color = '#A259FF' }) {
+function Kettlebell({ position = [0, 0, 0], color = '#A259FF' }: ComponentProps) {
   // Kettlebell: sphere + torus handle
   return (
     <group position={position}>

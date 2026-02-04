@@ -4,9 +4,11 @@ import logo from "@/public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -19,206 +21,166 @@ export const Navbar = () => {
       }
     };
 
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
     window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   return (
     <>
-      <header className="p-4 md:py-6 relative z-50">
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+            ? "bg-black/80 backdrop-blur-xl border-b border-white/10 py-4"
+            : "bg-transparent py-6"
+          }`}
+      >
         <div className="container px-4 mx-auto sm:px-6 lg:px-8">
           <div className="flex items-center justify-between relative">
-            <div className="flex-shrink-0 p-4 sm:p-0">
+            {/* Logo */}
+            <div className="flex-shrink-0">
               <Link
                 href="/"
-                className="flex rounded outline-none font-bold text-3xl focus:ring-gray-900 focus:ring-offset-2"
+                className="flex items-center rounded outline-none font-bold text-2xl focus:ring-yellow-400 focus:ring-offset-2"
               >
                 <Image
                   src={logo}
-                  alt="logo"
-                  width={55}
-                  height={55}
-                  className="mr-2"
+                  alt="FitVibe logo"
+                  width={50}
+                  height={50}
+                  className="mr-3"
                 />
-                <div className="flex mt-2">
-                  Fit <span className="text-blue-600">Vibe</span>
+                <div className="flex text-white">
+                  Fit<span className="text-yellow-400">Vibe</span>
                 </div>
               </Link>
             </div>
 
+            {/* Mobile menu button */}
             <div className="flex lg:hidden">
               <button
                 type="button"
-                className="text-gray-900 z-50"
+                className="text-white hover:text-yellow-400 transition-colors z-50 p-2"
                 onClick={toggleMobileMenu}
+                aria-label="Toggle menu"
               >
-                <span aria-hidden="true">
-                  {isMobileMenuOpen ? (
-                    <svg
-                      className="w-7 h-7"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-7 h-7"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    </svg>
-                  )}
-                </span>
+                {isMobileMenuOpen ? (
+                  <X className="w-7 h-7" />
+                ) : (
+                  <Menu className="w-7 h-7" />
+                )}
               </button>
             </div>
 
-            <div className="hidden lg:flex lg:ml-16 lg:items-center lg:justify-center lg:space-x-10 xl:space-x-16">
-            
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex lg:items-center lg:space-x-8">
               <a
                 href="https://github.com/Aryainguz/fitvibe"
-                className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-white transition-colors font-medium"
               >
                 Contribute
               </a>
               <Link
-                href={"/dashboard/challenges"}
-                className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
+                href="/dashboard/challenges"
+                className="text-gray-300 hover:text-white transition-colors font-medium"
               >
-                Daily Challenges
+                Challenges
               </Link>
               <Link
-                href={"/dashboard/rewards"}
-                className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
+                href="/dashboard/rewards"
+                className="text-gray-300 hover:text-white transition-colors font-medium"
               >
-                Rewards Store
+                Rewards
               </Link>
-            </div>
+              <Link
+                href="/dashboard/leaderboard"
+                className="text-gray-300 hover:text-white transition-colors font-medium"
+              >
+                Leaderboard
+              </Link>
+            </nav>
 
-            <div className="hidden lg:ml-auto lg:flex lg:items-center lg:space-x-10">
+            {/* Desktop CTA */}
+            <div className="hidden lg:flex lg:items-center lg:space-x-4">
+              <Link href="/login">
+                <button className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2">
+                  Login
+                </button>
+              </Link>
               <Link href="/dashboard">
-                <div
-                  className="inline-flex items-center justify-center px-6 py-3 text-base font-bold leading-7 text-white transition-all duration-200 bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 font-pj focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
-                  role="button"
-                >
+                <button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-yellow-400/25">
                   Dashboard
-                </div>
+                </button>
               </Link>
             </div>
           </div>
-
-          <nav
-            className={`hidden menu w-screen absolute right-0 bg-white z-10 p-5  rounded-b-xl border-2`}
-          >
-            <div className="px-1 py-8">
-              <div className="grid gap-y-7">
-                <a
-                  href="#"
-                  className="flex items-center p-3 -m-3 text-base font-medium text-gray-900 transition-all duration-200 rounded-xl hover:bg-gray-50 focus:outline-none font-pj focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
-                >
-                  {" "}
-                  Features{" "}
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center p-3 -m-3 text-base font-medium text-gray-900 transition-all duration-200 rounded-xl hover:bg-gray-50 focus:outline-none font-pj focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
-                >
-                  {" "}
-                  Pricing{" "}
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center p-3 -m-3 text-base font-medium text-gray-900 transition-all duration-200 rounded-xl hover:bg-gray-50 focus:outline-none font-pj focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
-                >
-                  {" "}
-                  Automation{" "}
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center p-3 -m-3 text-base font-medium text-gray-900 transition-all duration-200 rounded-xl hover:bg-gray-50 focus:outline-none font-pj focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
-                >
-                  {" "}
-                  Customer Login{" "}
-                </a>
-                <Link href="/dashboard">
-                  <div
-                    className="inline-flex items-center justify-center px-6 py-3 text-base font-bold leading-7 text-white transition-all duration-200 bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 font-pj focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
-                    role="button"
-                  >
-                    Dashboard
-                  </div>
-                </Link>
-              </div>
-            </div>
-          </nav>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
       <div
-        className={`lg:hidden fixed inset-0 z-40 bg-gray-50 transform ${
-          isMobileMenuOpen ? "translate-y-0" : "-translate-y-full"
-        } transition-transform duration-300 ease-in-out`}
+        className={`lg:hidden fixed inset-0 z-40 bg-black/95 backdrop-blur-xl transform transition-all duration-300 ${isMobileMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+          }`}
       >
-        <div className="flex flex-col h-full pt-20">
-          <div className="flex flex-col flex-grow justify-center items-center">
-            <a
-              href="#features"
-              className="text-2xl font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2 mb-8"
+        <div className="flex flex-col h-full pt-24 pb-8 px-6">
+          <nav className="flex flex-col items-center justify-center flex-grow space-y-8">
+            <Link
+              href="/dashboard/challenges"
+              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
               onClick={toggleMobileMenu}
             >
-              Features
-            </a>
-            <a
-              href="#pricing"
-              className="text-2xl font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2 mb-8"
-              onClick={toggleMobileMenu}
-            >
-              Pricing
-            </a>
-            <a
-              href="#"
-              className="text-2xl font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2 mb-8"
-              onClick={toggleMobileMenu}
-            >
-              Automation
-            </a>
-            <a
-              href="#"
-              className="text-2xl font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2 mb-8"
-              onClick={toggleMobileMenu}
-            >
-              {" "}
-              Customer Login{" "}
-            </a>
-            <Link href="/dashboard">
-              <div
-                className="inline-flex items-center justify-center px-6 py-3 text-base font-bold leading-7 text-white transition-all duration-200 bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 font-pj focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
-                role="button"
-              >
-                Dashboard
-              </div>
+              Challenges
             </Link>
-          </div>
+            <Link
+              href="/dashboard/rewards"
+              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
+              onClick={toggleMobileMenu}
+            >
+              Rewards
+            </Link>
+            <Link
+              href="/dashboard/leaderboard"
+              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
+              onClick={toggleMobileMenu}
+            >
+              Leaderboard
+            </Link>
+            <a
+              href="https://github.com/Aryainguz/fitvibe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
+              onClick={toggleMobileMenu}
+            >
+              Contribute
+            </a>
+
+            <div className="pt-8 flex flex-col gap-4 w-full max-w-xs">
+              <Link href="/login" onClick={toggleMobileMenu}>
+                <button className="w-full text-white border border-white/30 hover:bg-white/10 font-bold px-8 py-4 rounded-full transition-all duration-200">
+                  Login
+                </button>
+              </Link>
+              <Link href="/dashboard" onClick={toggleMobileMenu}>
+                <button className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-8 py-4 rounded-full transition-all duration-200">
+                  Dashboard
+                </button>
+              </Link>
+            </div>
+          </nav>
         </div>
       </div>
     </>
   );
 };
-

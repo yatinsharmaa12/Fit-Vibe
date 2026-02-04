@@ -4,6 +4,7 @@ import * as posedetection from "@tensorflow-models/pose-detection";
 import "@tensorflow/tfjs-backend-webgl";
 import * as tf from "@tensorflow/tfjs";
 import { toast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 import { Button } from "../ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -13,6 +14,7 @@ export default function PoseCreation() {
   const [poseData, setPoseData] = useState<posedetection.Pose | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { data: session } = useSession();
 
   // Initialize the pose detector.
   useEffect(() => {
@@ -127,14 +129,41 @@ export default function PoseCreation() {
     }
   }, [poseData, imageURL, drawPose]);
 
-  // Save pose action; implement saving logic as needed.
-  const handleSavePose = () => {
-    if (poseData) {
-      // Here you could send poseData to your API or store it.
-      console.log("Pose data to be saved:", poseData);
-      toast({ title: "Pose saved!", variant: "success" });
+  // Save pose action; call API to store pose data
+  const handleSavePose = async () => {
+    console.log("Session state:", session);
+    console.log("User email:", session?.user?.email);
+    if (poseData && session?.user?.email) {
+      try {
+        const response = await fetch("/api/user/addPose", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: session.user.email,
+            poseData: poseData,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          toast({ title: "Pose saved successfully!", variant: "default" }); // Variant 'success' might not exist in default shadcn toast, check usage
+          console.log("Saved pose:", data.pose);
+        } else {
+          toast({ title: "Failed to save pose", description: data.message, variant: "destructive" });
+        }
+      } catch (error) {
+        console.error("Error saving pose:", error);
+        toast({ title: "Error saving pose", variant: "destructive" });
+      }
     } else {
-      toast({ title: "No pose detected to save.", variant: "destructive" });
+      if (!poseData) {
+        toast({ title: "No pose detected to save.", variant: "destructive" });
+      } else if (!session?.user?.email) {
+        toast({ title: "You must be logged in to save a pose.", variant: "destructive" });
+      }
     }
   };
 
@@ -148,6 +177,7 @@ export default function PoseCreation() {
         <div className="mb-4">
           <div className="relative">
             <canvas ref={canvasRef} className="w-full h-auto" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img ref={imageRef} style={{ display: "none" }} alt="Uploaded" />
           </div>
           <div className="mt-2 flex gap-2">

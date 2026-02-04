@@ -10,7 +10,8 @@ export type ExerciseType =
   | "Pull-Up"
   | "Squat"
   | "Shoulder Press"
-  | "Bicep Curl";
+  | "Bicep Curl"
+  | "Custom Pose";
 
 export type ExerciseCounts = {
   pushup: number;
@@ -18,6 +19,7 @@ export type ExerciseCounts = {
   squat: number;
   shoulderPress: number;
   bicepCurl: number;
+  custom: number;
 };
 
 export function useExerciseCounter() {
@@ -32,7 +34,10 @@ export function useExerciseCounter() {
     squat: 0,
     shoulderPress: 0,
     bicepCurl: 0,
+    custom: 0,
   });
+  const [customPoses, setCustomPoses] = useState<any[]>([]);
+  const [selectedCustomPose, setSelectedCustomPose] = useState<any>(null);
   const totalReps =
     exerciseCounts.pushup +
     exerciseCounts.pullup +
@@ -65,6 +70,82 @@ export function useExerciseCounter() {
     if (degree > 180) degree = 360 - degree;
     return degree;
   };
+
+  // Cosine Similarity Function
+  const cosineSimilarity = (poseKeypoints: posedetection.Keypoint[], targetKeypoints: { x: number, y: number, name?: string }[]) => {
+    // We will use 17 keypoints from MoveNet
+    // Vector A: Live Pose, Vector B: Target Pose
+    // Only consider x and y for now
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    // Use common index for simplicity, assuming Order is consistent (MoveNet ordering)
+    for (let i = 0; i < poseKeypoints.length; i++) {
+      // Only use keypoints with good confidence in live pose
+      if (poseKeypoints[i].score && poseKeypoints[i].score! > 0.3) {
+        const Ax = poseKeypoints[i].x;
+        const Ay = poseKeypoints[i].y;
+
+        // Normalize slightly to bounding box could be better, but rough coords comparison 
+        // works if user is same distance.
+        // BETTER: Use L2 Normalized vectors relative to a root point (e.g., hips).
+        // For MVP: Direct vector comparison. But users vary in distance.
+        // IMPROVEMENT: Normalize coordinates relative to root (e.g. nose or hip center) and scale.
+        // Let's stick to raw cosine similarity of flattened vector for simplicity first or just key angles.
+
+        // ACTUALLY: Let's use Cosine Similarity of the vector (x,y) sequence.
+        // This is scale invariant but sensitive to translation if using raw coords.
+        // Shift to center of gravity usually needed. 
+        // Given time, let's try a simpler approach: Match Key Angles? 
+        // The request asked for matching the saved pose. The saved pose has keypoints.
+
+        // Let's implement Cosine Similarity on Relative Vectors (Limb vectors).
+        // But saved data is raw keypoints.
+
+        const Bx = targetKeypoints[i].x;
+        const By = targetKeypoints[i].y;
+
+        dotProduct += (Ax * Bx + Ay * By);
+        normA += (Ax * Ax + Ay * Ay);
+        normB += (Bx * Bx + By * By);
+      }
+    }
+
+    // Fallback if norms are zero
+    if (normA === 0 || normB === 0) return 0;
+
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  };
+
+  // Helper to normalize pose to [0,1] bounding box to handle distance diffs
+  const normalizePose = (keypoints: { x: number, y: number, score?: number }[]) => {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    keypoints.forEach(kp => {
+      if (kp.x < minX) minX = kp.x;
+      if (kp.y < minY) minY = kp.y;
+      if (kp.x > maxX) maxX = kp.x;
+      if (kp.y > maxY) maxY = kp.y;
+    });
+    const width = maxX - minX;
+    const height = maxY - minY;
+    return keypoints.map(kp => ({
+      x: (kp.x - minX) / (width || 1),
+      y: (kp.y - minY) / (height || 1),
+      score: kp.score
+    }));
+  };
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch(`/api/user/getPoses?email=${encodeURIComponent(session.user.email)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.poses) setCustomPoses(data.poses);
+        })
+        .catch(err => console.error("Error fetching poses:", err));
+    }
+  }, [session]);
 
   useEffect(() => {
     async function initDetector() {
@@ -106,9 +187,13 @@ export function useExerciseCounter() {
     }
   }, [enableDetection, currExercise]);
 
+  // Set the selected custom pose when ExerciseType changes to a specific custom one?
+  // Or rather, we need a way to SELECT which custom pose.
+  // We'll expose setCurrExercise and verify loop.
 
 
-  
+
+
   const drawPose = useCallback((pose: posedetection.Pose, accuracy?: number) => {
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
@@ -298,7 +383,7 @@ export function useExerciseCounter() {
               }
               break;
             }
-            
+
             case "Bicep Curl": {
               const leftAngle = calculateAngle(
                 pose.keypoints[5],
@@ -332,6 +417,39 @@ export function useExerciseCounter() {
               break;
             }
             default:
+              // Handle Custom Pose Matching
+              if (selectedCustomPose) {
+                // Normalize both live and target pose for better comparison
+                const normalizedLive = normalizePose(pose.keypoints);
+                const normalizedTarget = normalizePose(selectedCustomPose.keypoints);
+
+                // Simple L2 distance check on normalized keypoints might be better than Cosine for "Shape" matching
+                // Let's average the distance between corresponding keypoints
+                let totalDist = 0;
+                let validPoints = 0;
+                for (let i = 0; i < normalizedLive.length; i++) {
+                  if (normalizedLive[i].score && normalizedLive[i].score! > 0.4) {
+                    const dx = normalizedLive[i].x - normalizedTarget[i].x;
+                    const dy = normalizedLive[i].y - normalizedTarget[i].y;
+                    totalDist += Math.sqrt(dx * dx + dy * dy);
+                    validPoints++;
+                  }
+                }
+
+                // Average distance (0 is perfect match)
+                const avgDist = validPoints > 0 ? totalDist / validPoints : 1;
+                // Convert to similarity score (0 to 100)
+                // Heuristic: avgDist < 0.1 is very good match
+                const similarity = Math.max(0, Math.min(100, Math.round((1 - avgDist * 2) * 100))); // Multiplier 2 makes it stricter
+
+                computedAccuracy = similarity;
+
+                if (similarity > 80) {
+                  setRepFeedback("Pose Matched!");
+                } else {
+                  setRepFeedback("Adjust Pose...");
+                }
+              }
               break;
           }
         }
@@ -377,6 +495,9 @@ export function useExerciseCounter() {
     setCurrExercise,
     liveFeedback,
     repFeedback,
+    customPoses,
+    selectedCustomPose,
+    setSelectedCustomPose,
   };
 }
 

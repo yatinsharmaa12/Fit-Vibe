@@ -10,6 +10,7 @@ export interface IUser extends Document {
   token: number;
   calories: number;
   challanges: IUserChallenge[];
+  customPoses: IPose[];
   accounts?: mongoose.Types.ObjectId[];
   sessions?: mongoose.Types.ObjectId[];
 }
@@ -22,12 +23,36 @@ export interface IUserChallenge {
   progress: number;
 }
 
+export interface IPose {
+  name?: string;
+  keypoints: {
+    x: number;
+    y: number;
+    z?: number;
+    score?: number;
+    name?: string;
+  }[];
+  createdAt: Date;
+}
+
 
 const userChallengeSchema = new mongoose.Schema<IUserChallenge>({
   challengeId: { type: String, required: true },
   startedAt: { type: Date, default: Date.now },
   completedAt: { type: Date },
   progress: { type: Number, default: 0 },
+});
+
+const poseSchema = new mongoose.Schema<IPose>({
+  name: { type: String },
+  keypoints: [{
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    z: { type: Number },
+    score: { type: Number },
+    name: { type: String }
+  }],
+  createdAt: { type: Date, default: Date.now }
 });
 
 
@@ -61,6 +86,7 @@ const userSchema = new mongoose.Schema<IUser>({
     default: 0,
   },
   challanges: [userChallengeSchema],
+  customPoses: [poseSchema],
   accounts: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Account'

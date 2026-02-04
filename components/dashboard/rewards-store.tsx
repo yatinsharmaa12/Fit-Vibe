@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Coins, Star, Package, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from "next/image";
 import { Sidebar } from './sidebar';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
@@ -154,9 +155,10 @@ Team 100xdevs`,
             {products.map((product) => (
               <Card key={product.name} className="overflow-hidden">
                 <div className="relative h-48">
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.name}
+                    fill
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute right-4 top-4 rounded-full bg-background/90 p-2">

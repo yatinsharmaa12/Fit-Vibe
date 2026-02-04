@@ -4,8 +4,36 @@ import Hero3DBackground from "./Hero3DBackground";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, Activity, Trophy, Users, Target, Flame, Zap, Star, TrendingUp } from "lucide-react";
+
+// --- Stats Section ---
+const StatsSection = () => (
+  <section className="relative py-20 bg-gradient-to-b from-black to-zinc-900">
+    <div className="container mx-auto px-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        {[
+          { value: "50K+", label: "Active Users", icon: Users },
+          { value: "1M+", label: "Workouts Done", icon: Activity },
+          { value: "500K+", label: "Calories Burned", icon: Flame },
+          { value: "10K+", label: "Challenges Won", icon: Trophy },
+        ].map((stat, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: i * 0.1 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <stat.icon className="w-10 h-10 text-yellow-400 mx-auto mb-4" />
+            <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
+            <div className="text-gray-400 text-lg">{stat.label}</div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
 
 // --- Feature/Goals Section ---
 const FeatureGoalsSection = () => (
@@ -28,7 +56,7 @@ const FeatureGoalsSection = () => (
           viewport={{ once: true }}
           className="text-2xl text-gray-300 mb-10 max-w-2xl"
         >
-          Define, track, and achieve your fitness milestones. Whether it's burning calories, building muscle, or staying consistent, our platform helps you visualize and celebrate your progress.
+          Define, track, and achieve your fitness milestones. Whether it&apos;s burning calories, building muscle, or staying consistent, our platform helps you visualize and celebrate your progress.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -36,26 +64,28 @@ const FeatureGoalsSection = () => (
           transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
           viewport={{ once: true }}
         >
-          <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-12 py-5 text-2xl rounded-full shadow-lg transition-all duration-200">
-            Learn more
-          </Button>
+          <Link href="/dashboard">
+            <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-12 py-5 text-2xl rounded-full shadow-lg transition-all duration-200">
+              Get Started
+            </Button>
+          </Link>
         </motion.div>
       </motion.div>
-      {/* Right: Glassmorphic Card with Chart Placeholder */}
+      {/* Right: Glassmorphic Card with Progress */}
       <motion.div
         initial={{ opacity: 0, x: 40, scale: 0.95 }}
         whileInView={{ opacity: 1, x: 0, scale: 1 }}
         transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
         viewport={{ once: true }}
-        whileHover={{ scale: 1.035, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
-        className="flex-1 max-w-2xl w-full rounded-4xl bg-white/10 backdrop-blur-2xl shadow-2xl border border-white/20 p-14"
+        whileHover={{ scale: 1.02, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
+        className="flex-1 max-w-2xl w-full rounded-3xl bg-white/10 backdrop-blur-2xl shadow-2xl border border-white/20 p-10"
       >
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-white font-bold text-2xl">Edit your goal</span>
-            <span className="text-yellow-400 font-semibold text-2xl">$56,000</span>
+            <span className="text-white font-bold text-2xl">Weekly Goal</span>
+            <span className="text-yellow-400 font-semibold text-2xl">2,500 cal</span>
           </div>
-          {/* Chart Placeholder */}
+          {/* Progress Chart */}
           <motion.div
             initial={{ opacity: 0, scaleY: 0.8 }}
             whileInView={{ opacity: 1, scaleY: 1 }}
@@ -63,50 +93,48 @@ const FeatureGoalsSection = () => (
             viewport={{ once: true }}
             className="w-full h-48 bg-gradient-to-tr from-yellow-400/30 via-purple-400/20 to-white/10 rounded-2xl mb-6 flex items-end"
           >
-            <div className="w-full h-full flex items-end gap-2 px-4">
-              {/* Fake chart bars */}
-              {[30, 60, 40, 80, 50, 90, 70, 100, 60, 80, 40, 70].map((h, i) => (
+            <div className="w-full h-full flex items-end gap-2 px-4 pb-4">
+              {/* Animated chart bars */}
+              {[40, 65, 50, 85, 60, 95, 75].map((h, i) => (
                 <motion.div
                   key={i}
                   initial={{ scaleY: 0 }}
                   whileInView={{ scaleY: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 + i * 0.04, ease: 'easeOut' }}
+                  transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: 'easeOut' }}
                   viewport={{ once: true }}
-                  className="bg-yellow-400/80 rounded-t-xl origin-bottom"
-                  style={{ height: `${h}%`, width: '6%' }}
+                  className="flex-1 bg-gradient-to-t from-yellow-400 to-yellow-300 rounded-t-xl origin-bottom"
+                  style={{ height: `${h}%` }}
                 />
               ))}
             </div>
           </motion.div>
           <div className="flex justify-between text-lg text-gray-300 mb-4">
-            <span>21 months</span>
-            <span>$2,891/mo</span>
+            <span>Mon - Sun</span>
+            <span>357 cal/day avg</span>
           </div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.6, ease: 'easeOut' }}
-            viewport={{ once: true }}
-          >
-            <Button size="lg" className="bg-yellow-400 text-black font-bold px-8 py-4 text-xl rounded-full shadow hover:bg-yellow-300">
-              Change goal
-            </Button>
-          </motion.div>
         </div>
-        {/* Recent Transactions (Fitness themed) */}
+        {/* Recent Activity */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.7, ease: 'easeOut' }}
           viewport={{ once: true }}
-          className="mt-10"
+          className="mt-6"
         >
-          <div className="font-semibold text-white mb-4 text-xl">Recent Activity</div>
-          <ul className="text-lg text-gray-200 space-y-2">
-            <li className="flex justify-between"><span>🏃‍♂️ 5km Run</span><span className="text-green-400">+500 cal</span></li>
-            <li className="flex justify-between"><span>💪 Strength Training</span><span className="text-green-400">+300 cal</span></li>
-            <li className="flex justify-between"><span>🚴‍♀️ Cycling</span><span className="text-green-400">+400 cal</span></li>
-            <li className="flex justify-between"><span>🥗 Healthy Meal</span><span className="text-green-400">+150 cal</span></li>
+          <div className="font-semibold text-white mb-4 text-xl">Today&apos;s Activity</div>
+          <ul className="text-lg text-gray-200 space-y-3">
+            <li className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3">
+              <span className="flex items-center gap-3"><Flame className="w-5 h-5 text-orange-400" /> Morning Run</span>
+              <span className="text-green-400 font-semibold">+320 cal</span>
+            </li>
+            <li className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3">
+              <span className="flex items-center gap-3"><Zap className="w-5 h-5 text-purple-400" /> HIIT Workout</span>
+              <span className="text-green-400 font-semibold">+450 cal</span>
+            </li>
+            <li className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3">
+              <span className="flex items-center gap-3"><Activity className="w-5 h-5 text-blue-400" /> Evening Walk</span>
+              <span className="text-green-400 font-semibold">+150 cal</span>
+            </li>
           </ul>
         </motion.div>
       </motion.div>
@@ -115,226 +143,277 @@ const FeatureGoalsSection = () => (
 );
 
 // --- Main Features Section ---
-const MainFeaturesSection = () => (
-  <section className="py-32 bg-gradient-to-b from-black via-zinc-900 to-black relative">
-    <div className="container mx-auto px-4">
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.18 } }
-        }}
-        className="text-center mb-24"
-      >
+const MainFeaturesSection = () => {
+  const features = [
+    { icon: Activity, title: "Smart Tracking", desc: "AI-powered pose detection tracks your workouts in real-time.", color: "from-blue-500 to-cyan-400" },
+    { icon: Trophy, title: "Earn Rewards", desc: "Complete challenges and earn points for exclusive rewards.", color: "from-yellow-400 to-orange-500" },
+    { icon: Users, title: "Community", desc: "Connect with fitness enthusiasts and compete on leaderboards.", color: "from-purple-500 to-pink-500" },
+    { icon: Target, title: "Daily Challenges", desc: "New challenges every day to keep you motivated and engaged.", color: "from-green-400 to-emerald-500" },
+  ];
+
+  return (
+    <section className="py-32 bg-gradient-to-b from-zinc-900 via-black to-zinc-900 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-400/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
-          className="text-yellow-400 font-semibold tracking-widest text-2xl uppercase mb-4"
-        >Main Features</motion.div>
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          className="text-5xl md:text-6xl font-extrabold text-white mb-6"
-        >Made to Make Fitness Easy for Everyone</motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          className="text-2xl text-gray-300 max-w-3xl mx-auto"
-        >All the tools you need to stay motivated, track progress, and connect with the fitness community.</motion.p>
-      </motion.div>
-      <div className="flex flex-wrap justify-center gap-16">
-        {/* Feature Card 1 */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          whileHover={{ scale: 1.07, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
-          className="w-80 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-10 flex flex-col items-center shadow-2xl"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.18 } }
+          }}
+          className="text-center mb-20"
         >
-          <Image src="/feature-track.png" alt="Track" width={80} height={80} className="mb-6" />
-          <div className="font-bold text-white text-2xl mb-4">Smart Tracking</div>
-          <div className="text-gray-300 text-lg text-center">Track workouts, calories, and progress with ease.</div>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}
+            viewport={{ once: true }}
+            className="text-yellow-400 font-semibold tracking-widest text-xl uppercase mb-4"
+          >Main Features</motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-6xl font-extrabold text-white mb-6"
+          >Everything You Need to Get Fit</motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
+            viewport={{ once: true }}
+            className="text-xl text-gray-400 max-w-2xl mx-auto"
+          >All the tools you need to stay motivated, track progress, and achieve your fitness goals.</motion.p>
         </motion.div>
-        {/* Feature Card 2 */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05, y: -10 }}
+              className="group relative bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 flex flex-col items-center text-center hover:bg-white/10 transition-all duration-300"
+            >
+              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                <feature.icon className="w-10 h-10 text-white" />
+              </div>
+              <div className="font-bold text-white text-2xl mb-3">{feature.title}</div>
+              <div className="text-gray-400 text-lg">{feature.desc}</div>
+            </motion.div>
+          ))}
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
           viewport={{ once: true }}
-          whileHover={{ scale: 1.07, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
-          className="w-80 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-10 flex flex-col items-center shadow-2xl"
+          className="text-center mt-16"
         >
-          <Image src="/feature-reward.png" alt="Rewards" width={80} height={80} className="mb-6" />
-          <div className="font-bold text-white text-2xl mb-4">Earn Rewards</div>
-          <div className="text-gray-300 text-lg text-center">Get rewarded for consistency and achievements.</div>
-        </motion.div>
-        {/* Feature Card 3 */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          whileHover={{ scale: 1.07, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
-          className="w-80 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-10 flex flex-col items-center shadow-2xl"
-        >
-          <Image src="/feature-community.png" alt="Community" width={80} height={80} className="mb-6" />
-          <div className="font-bold text-white text-2xl mb-4">Community</div>
-          <div className="text-gray-300 text-lg text-center">Connect, compete, and grow with others.</div>
-        </motion.div>
-        {/* Feature Card 4 */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          whileHover={{ scale: 1.07, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
-          className="w-80 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-10 flex flex-col items-center shadow-2xl"
-        >
-          <Image src="/feature-challenge.png" alt="Challenges" width={80} height={80} className="mb-6" />
-          <div className="font-bold text-white text-2xl mb-4">Daily Challenges</div>
-          <div className="text-gray-300 text-lg text-center">Stay motivated with new challenges every day.</div>
+          <Link href="/dashboard">
+            <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-bold px-14 py-6 text-2xl rounded-full shadow-2xl transition-all duration-200">
+              Start Your Journey <ArrowRight className="ml-3 w-7 h-7" />
+            </Button>
+          </Link>
         </motion.div>
       </div>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-        viewport={{ once: true }}
-        className="text-center mt-20"
-      >
-        <Link href="/dashboard">
-          <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-14 py-6 text-2xl rounded-full shadow-lg transition-all duration-200">
-            Start your journey
-          </Button>
-        </Link>
-      </motion.div>
-    </div>
+    </section>
+  );
+};
+
+// --- Testimonials Section ---
+const TestimonialsSection = () => {
+  const testimonials = [
+    { name: "Sarah K.", role: "Lost 20 lbs", text: "FitVibe completely transformed my fitness routine. The AI tracking is incredibly accurate!", avatar: "S" },
+    { name: "Mike R.", role: "Marathon Runner", text: "Daily challenges keep me motivated. I've never been more consistent with my workouts.", avatar: "M" },
+    { name: "Priya T.", role: "Yoga Enthusiast", text: "The community features are amazing. I love competing with friends on the leaderboard!", avatar: "P" },
+  ];
+
+  return (
+    <section className="py-32 bg-black relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400/50 to-transparent" />
+
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <div className="text-yellow-400 font-semibold tracking-widest text-xl uppercase mb-4">Testimonials</div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white">Loved by Fitness Enthusiasts</h2>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((t, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -5 }}
+              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8"
+            >
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold text-xl">
+                  {t.avatar}
+                </div>
+                <div>
+                  <div className="text-white font-bold text-lg">{t.name}</div>
+                  <div className="text-yellow-400 text-sm">{t.role}</div>
+                </div>
+              </div>
+              <p className="text-gray-300 text-lg leading-relaxed">&quot;{t.text}&quot;</p>
+              <div className="flex gap-1 mt-6">
+                {[...Array(5)].map((_, j) => (
+                  <Star key={j} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- CTA Section ---
+const CTASection = () => (
+  <section className="py-24 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 relative overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+      className="container mx-auto px-4 text-center"
+    >
+      <h2 className="text-4xl md:text-6xl font-extrabold text-black mb-6">Ready to Transform Your Fitness?</h2>
+      <p className="text-xl text-black/70 mb-10 max-w-2xl mx-auto">Join thousands of users who are already crushing their fitness goals with FitVibe.</p>
+      <Link href="/login">
+        <Button className="bg-black hover:bg-gray-900 text-white font-bold px-14 py-6 text-2xl rounded-full shadow-2xl transition-all duration-200">
+          Get Started Free <ArrowRight className="ml-3 w-7 h-7" />
+        </Button>
+      </Link>
+    </motion.div>
   </section>
 );
 
-// --- Footer ---
-const Footer = () => (
-  <footer className="py-8 bg-black border-t border-white/10 text-center text-gray-400 text-sm">
-    <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div>&copy; {new Date().getFullYear()} FitVibe. All rights reserved.</div>
-      <div className="flex gap-4 justify-center">
-        <a href="#" className="hover:text-yellow-400 transition">Privacy Policy</a>
-        <a href="#" className="hover:text-yellow-400 transition">Terms of Service</a>
-        <a href="#" className="hover:text-yellow-400 transition">Contact</a>
-      </div>
-    </div>
-  </footer>
-);
-
-// --- Main Page ---
+// --- Main Hero Component ---
 export const Hero = () => {
   return (
     <div className="relative min-h-screen bg-black overflow-x-hidden">
-      {/* 3D Animated Gym Background & Floating UI Elements */}
+      {/* 3D Animated Gym Background & Floating Elements */}
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <Hero3DBackground />
-        {/* Floating UI Elements */}
+
+        {/* Decorative gradient orbs */}
         <motion.div
-          initial={{ opacity: 0, y: -30, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="absolute top-24 right-20 z-20"
-        >
-          <div className="bg-white/90 rounded-2xl shadow-2xl p-4">
-            <Image src="/qr-placeholder.png" alt="QR Code" width={120} height={120} className="rounded" />
-          </div>
-        </motion.div>
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 0.6, scale: 1 }}
+          transition={{ duration: 1.5 }}
+          className="absolute top-20 right-20 w-72 h-72 bg-yellow-400 rounded-full blur-[120px] pointer-events-none"
+        />
         <motion.div
-          initial={{ opacity: 0, x: -30, scale: 0.8 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 0.7 }}
-          className="absolute bottom-36 left-20 z-20"
-        >
-          <div className="bg-white/80 rounded-full shadow-2xl p-2">
-            <Image src="/avatar-placeholder.jpg" alt="User Avatar" width={72} height={72} className="rounded-full" />
-          </div>
-        </motion.div>
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 0.4, scale: 1 }}
+          transition={{ duration: 1.5, delay: 0.3 }}
+          className="absolute bottom-40 left-20 w-60 h-60 bg-purple-500 rounded-full blur-[100px] pointer-events-none"
+        />
         <motion.div
-          initial={{ opacity: 0, scale: 0.7, rotate: -20 }}
-          animate={{ opacity: 0.7, scale: 1.2, rotate: 0 }}
-          transition={{ duration: 1.2, delay: 0.9 }}
-          className="absolute right-52 bottom-20 z-10"
-        >
-          <div className="w-36 h-36 bg-yellow-400 rounded-full blur-2xl opacity-70" />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 1, delay: 1.1 }}
-          className="absolute left-1/2 top-24 -translate-x-1/2 z-20"
-        >
-          <div className="bg-white/80 rounded-full shadow-2xl p-4">
-            <Image src="/dumbbell-icon.png" alt="Dumbbell Icon" width={60} height={60} />
-          </div>
-        </motion.div>
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 0.3, scale: 1 }}
+          transition={{ duration: 1.5, delay: 0.6 }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500 rounded-full blur-[150px] pointer-events-none"
+        />
+
         {/* Main Hero Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-48 pb-24">
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-32 pb-24">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center"
           >
-            <div className="mb-8 text-yellow-400 font-semibold tracking-widest text-2xl md:text-3xl uppercase">
-              Make your fitness journey easy
-            </div>
-            <h1 className="font-extrabold text-6xl md:text-8xl lg:text-9xl text-white mb-10 tracking-tight leading-tight drop-shadow-2xl">
-              THE MODERN WAY<br />TO GET FIT
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mb-6 inline-block px-6 py-2 bg-yellow-400/20 border border-yellow-400/30 rounded-full"
+            >
+              <span className="text-yellow-400 font-semibold tracking-wide text-lg">🔥 AI-Powered Fitness Platform</span>
+            </motion.div>
+
+            <h1 className="font-extrabold text-5xl md:text-7xl lg:text-8xl text-white mb-8 tracking-tight leading-tight">
+              THE MODERN WAY<br />
+              <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 bg-clip-text text-transparent">TO GET FIT</span>
             </h1>
-            <p className="text-3xl md:text-4xl text-gray-300 mb-14 max-w-4xl mx-auto">
-              Track workouts, earn rewards, and stay motivated with a next-gen fitness platform.
+
+            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Track workouts with AI pose detection, earn rewards for consistency, and compete with a global community of fitness enthusiasts.
             </p>
-            <Link href="/dashboard">
-              <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-16 py-7 text-3xl rounded-full shadow-2xl transition-all duration-200">
-                Start now <ArrowRight className="ml-4 w-10 h-10" />
-              </Button>
-            </Link>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/login">
+                <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-10 py-6 text-xl rounded-full shadow-2xl transition-all duration-200">
+                  Start Free <ArrowRight className="ml-2 w-6 h-6" />
+                </Button>
+              </Link>
+              <Link href="/dashboard/challenges">
+                <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 font-bold px-10 py-6 text-xl rounded-full transition-all duration-200">
+                  View Challenges
+                </Button>
+              </Link>
+            </div>
           </motion.div>
-          {/* Floating Glassmorphic Card */}
+
+          {/* Feature highlights */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-            className="mt-24 w-full max-w-4xl mx-auto rounded-4xl bg-white/10 backdrop-blur-2xl shadow-2xl border border-white/20 p-14 flex flex-col md:flex-row gap-16 items-center"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
           >
-            <div className="flex-1 min-w-[240px] text-left">
-              <div className="text-4xl font-bold text-white mb-4">$34,809.89</div>
-              <div className="text-gray-300 text-xl mb-8">Total Calories Burned</div>
-              <div className="flex gap-4 items-center">
-                <span className="inline-block w-6 h-6 bg-yellow-400 rounded-full animate-pulse" />
-                <span className="text-xl text-yellow-200">Active</span>
-              </div>
-            </div>
-            <div className="flex-1 min-w-[240px] text-left">
-              <div className="text-2xl font-semibold text-white mb-2">Refer a friend and receive rewards</div>
-              <div className="text-gray-400 text-lg mb-4">Motivate your friends and earn together!</div>
-              <Button size="lg" className="bg-yellow-400 text-black font-bold px-8 py-4 text-xl rounded-full shadow hover:bg-yellow-300">
-                Invite now
-              </Button>
-            </div>
+            {[
+              { icon: Activity, label: "AI Pose Detection" },
+              { icon: Trophy, label: "Earn Rewards" },
+              { icon: TrendingUp, label: "Track Progress" },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.05 }}
+                className="flex items-center justify-center gap-3 px-6 py-4 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl"
+              >
+                <item.icon className="w-6 h-6 text-yellow-400" />
+                <span className="text-white font-medium text-lg">{item.label}</span>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </div>
+
+      {/* Stats Section */}
+      <StatsSection />
+
       {/* Features/Goals Section */}
       <FeatureGoalsSection />
+
       {/* Main Features Section */}
       <MainFeaturesSection />
-      {/* Footer */}
-      <Footer />
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
+
+      {/* CTA Section */}
+      <CTASection />
     </div>
   );
 };

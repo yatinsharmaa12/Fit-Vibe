@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Coins } from 'lucide-react';
 import { Button } from '../ui/button';
+import Image from 'next/image';
 
 const rewards = [
   {
@@ -32,9 +33,11 @@ export function RewardsSection() {
             key={reward.name}
             className="flex gap-4 rounded-lg border p-4"
           >
-            <img
+            <Image
               src={reward.image}
               alt={reward.name}
+              width={96}
+              height={96}
               className="h-24 w-24 rounded-md object-cover"
             />
             <div className="flex flex-1 flex-col justify-between">

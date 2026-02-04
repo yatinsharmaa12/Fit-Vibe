@@ -1,26 +1,26 @@
 'use client';
 
 import { Avatar } from '@/components/ui/avatar';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
-import { Medal } from 'lucide-react';
+import { Medal, Trophy, Crown, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from "react"
 import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 
 interface User {
   name: string;
   points: number;
   image?: string;
+  rank?: number;
 }
 
-const DEFAULT_AVATAR = "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1739812418~exp=1739816018~hmac=2442be3cd30435c77e5ab68924abe83003c70c93db0a9ef781b4625d57154d82&w=740"
-
-
+const DEFAULT_AVATAR = "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg"
 
 export function Leaderboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { status, data: session } = useSession();
+  const { data: session } = useSession();
 
   const getAllUsers = async () => {
     try {
@@ -40,65 +40,94 @@ export function Leaderboard() {
   }, []);
 
   return (
-    <Card>
-      <div className="flex justify-between border-b p-6">
+    <Card className="bg-zinc-900 border-0 shadow-2xl ring-1 ring-white/10 rounded-3xl overflow-hidden h-full">
+      <div className="p-6 border-b border-white/10 bg-gradient-to-r from-zinc-900 via-zinc-900 to-black flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-semibold">Leaderboard</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Top performers this week
-          </p>
-
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-yellow-500" />
+            Top Performers
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1">Weekly Leaderboard</p>
         </div>
-        <div>
-
-          <button
-            onClick={getAllUsers}
-            disabled={isLoading}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            {isLoading ? 'Loading...' : 'Refresh'}
-          </button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={getAllUsers}
+          disabled={isLoading}
+          className="text-zinc-400 hover:text-white hover:bg-white/10"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
-      <div className="p-6">
+
+      <div className="p-0">
         {isLoading ? (
-          <div className="text-center">Loading users...</div>
+          <div className="p-8 text-center text-zinc-500">Loading champions...</div>
         ) : (
-          <div className="space-y-6">
-            {users.map((user, index) => (
-              <div
-                key={user.name}
-                className="flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted font-semibold">
-                    {index + 1}
+          <div className="divide-y divide-white/5">
+            {users.slice(0, 5).map((user, index) => {
+              let rankColor = "bg-zinc-800 text-zinc-400";
+              let Icon = null;
+
+              if (index === 0) {
+                rankColor = "bg-yellow-500/20 text-yellow-500 ring-1 ring-yellow-500/50";
+                Icon = Crown;
+              } else if (index === 1) {
+                rankColor = "bg-zinc-300/20 text-zinc-300 ring-1 ring-zinc-300/50";
+                Icon = Medal;
+              } else if (index === 2) {
+                rankColor = "bg-orange-600/20 text-orange-600 ring-1 ring-orange-600/50";
+                Icon = Medal;
+              }
+
+              return (
+                <div
+                  key={user.name}
+                  className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full font-bold text-sm ${rankColor}`}>
+                      {index + 1}
+                    </div>
+
+                    <div className="relative">
+                      <Avatar className="h-10 w-10 ring-2 ring-transparent group-hover:ring-white/20 transition-all">
+                        <Image
+                          src={user.image || DEFAULT_AVATAR}
+                          alt={user.name}
+                          width={40}
+                          height={40}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = DEFAULT_AVATAR;
+                          }}
+                        />
+                      </Avatar>
+                      {Icon && <Icon className="absolute -top-1 -right-1 w-4 h-4 fill-current text-inherit" />}
+                    </div>
+
+                    <div>
+                      <p className="font-semibold text-white">{user.name}</p>
+                      <p className="text-xs text-zinc-500">Level 5 Athlete</p>
+                    </div>
                   </div>
-                  <Avatar>
-                    <img
-                      src={user.image || session?.user?.image || DEFAULT_AVATAR}
-                      alt={user.name}
-                      className="h-10 w-10 rounded-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = DEFAULT_AVATAR;
-                      }}
-                    />
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {user.points.toLocaleString()} points
-                    </p>
+
+                  <div className="text-right">
+                    <div className="font-bold text-white">{user.points.toLocaleString()}</div>
+                    <div className="text-xs text-zinc-500">pts</div>
                   </div>
                 </div>
-                {index === 0 && (
-                  <Medal className="h-6 w-6 text-yellow-500" />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
+      </div>
+
+      <div className="p-4 border-t border-white/10 bg-zinc-950/50 text-center">
+        <Button variant="link" className="text-yellow-500 text-sm hover:text-yellow-400">
+          View Full Leaderboard
+        </Button>
       </div>
     </Card>
   );
