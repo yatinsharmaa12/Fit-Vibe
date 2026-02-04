@@ -1,7 +1,5 @@
 # FitVibe | Bajaj
 
-![Project Preview](./public/preview.png)
-
 ## Overview
 
 FitVibe is an innovative platform designed to engage users in daily challenges, rewarding their achievements and fostering a vibrant community. Leveraging advanced AI pose detection using TensorFlow.js, the platform offers an interactive and immersive user experience.
