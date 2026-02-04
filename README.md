@@ -1,4 +1,4 @@
-# FitVibe | Bajaj
+# FitVibe
 
 ## Overview
 
