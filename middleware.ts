@@ -7,6 +7,7 @@ import { getToken } from 'next-auth/jwt'
 const publicPaths = [
   '/login',
   '/sign-up',
+  '/register',
   '/otp',
   '/api/auth',
   '/_next',
@@ -23,16 +24,30 @@ export async function middleware(request: NextRequest) {
   const isPublicPath = publicPaths.some(path => url.pathname.startsWith(path))
 
   // If user is authenticated and tries to access auth pages, redirect to dashboard
-  if (token && (url.pathname.startsWith('/login') || url.pathname.startsWith('/sign-up'))) {
+  if (token && (url.pathname.startsWith('/login') || url.pathname.startsWith('/sign-up') || url.pathname.startsWith('/register'))) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // If user is not authenticated and tries to access protected pages, redirect to login
-  if (!token && !isPublicPath) {
+  if (!token && !isPublicPath && url.pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  return NextResponse.next()
+  // Add performance headers to response
+  const response = NextResponse.next()
+  
+  // Add caching headers for static assets
+  if (url.pathname.startsWith('/_next/static') || url.pathname.match(/\.(jpg|jpeg|png|gif|svg|ico|webp|avif)$/)) {
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+  }
+  
+  // Add security headers
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  
+  return response
 }
 
 // See "Matching Paths" below to learn more

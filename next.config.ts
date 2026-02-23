@@ -1,10 +1,55 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Performance Optimizations */
+  
+  // Image optimization
   images: {
-    domains: ['lh3.googleusercontent.com', 'images.unsplash.com', 'avatars.githubusercontent.com', 'img.freepik.com']
-  }
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.freepik.com',
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
 
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-icons'],
+  },
+
+  // Production optimizations
+  productionBrowserSourceMaps: false,
+  
+  // Compression
+  compress: true,
+
+  // PoweredBy header removal for security
+  poweredByHeader: false,
+
+  // React strict mode
+  reactStrictMode: true,
 }
+
 export default nextConfig;

@@ -5,9 +5,23 @@ if (!process.env.MONGO_URI) {
 }
 
 const uri = process.env.MONGO_URI;
+
+// Optimized connection options for better performance
 const options: MongoClientOptions = {
   maxPoolSize: 10,
   minPoolSize: 5,
+  maxIdleTimeMS: 60000, // Close idle connections after 60s
+  serverSelectionTimeoutMS: 10000, // Increased timeout for SSL handshake
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 15000, // Increased timeout for initial connection
+  retryWrites: true,
+  retryReads: true,
+  // Removed compressors to avoid SSL conflicts
+  tls: true, // Enable TLS
+  tlsAllowInvalidCertificates: false, // Validate certificates in production
+  tlsAllowInvalidHostnames: false,
+  directConnection: false, // Use replica set
+  family: 4, // Force IPv4 to avoid potential IPv6 issues
 };
 
 let client: MongoClient;
