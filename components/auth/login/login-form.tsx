@@ -1,12 +1,13 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function LoginForm({
   className,
@@ -34,7 +35,7 @@ export function LoginForm({
       });
 
       if (result?.error) {
-        setError(result.error);
+        setError("Invalid credentials");
         console.error("Login error:", result.error);
       } else {
         router.push("/dashboard");
@@ -42,10 +43,9 @@ export function LoginForm({
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError(error instanceof Error ? error.message : "Failed to login");
+      setError("Something went wrong");
     } finally {
       setIsLoading(false);
-      // toast({ title: "User Logged-In succesfully", variant: "success" })
     }
   };
 
@@ -54,17 +54,14 @@ export function LoginForm({
       setIsLoading(true);
       setError(null);
 
-      const result = await signIn("google", {
+      // This prevents auto-login and shows Google sign-in page
+      await signIn("google", {
         callbackUrl: "/dashboard",
+        redirect: true
       });
-
-      if (result?.error) {
-        setError(result.error);
-        console.error("Google login error:", result.error);
-      }
     } catch (error) {
       console.error("Google login error:", error);
-      setError(error instanceof Error ? error.message : "Failed to login with Google");
+      setError("Google sign-in failed");
     } finally {
       setIsLoading(false);
     }
@@ -146,7 +143,7 @@ export function LoginForm({
           disabled={isLoading}
         >
           {isLoading ? (
-            "Connecting..."
+            "Signing in..."
           ) : (
             <>
               <svg
@@ -159,7 +156,7 @@ export function LoginForm({
                   fill="currentColor"
                 />
               </svg>
-              Login with Google
+              Sign in with Google
             </>
           )}
         </Button>
@@ -167,9 +164,9 @@ export function LoginForm({
 
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
-        <a href="/register" className="text-blue-600 hover:underline">
+        <Link href="/register" className="underline underline-offset-4 hover:text-primary">
           Sign up
-        </a>
+        </Link>
       </p>
     </form>
   );
