@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import connectDB from '@/utils/db';
 import { issueOtp } from '@/lib/otp';
-import { getEmailConfig } from '@/lib/config';
+import { getEmailConfig, isProduction } from '@/lib/config';
 import { getClientIp, readJson } from '@/lib/api';
 import { isRateLimited } from '@/lib/rate-limit';
 import { normalizeEmail, isRecord } from '@/lib/validation';
-import { logError } from '@/lib/logger';
+import { logError, logInfo } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const body = await readJson(req);
@@ -29,8 +29,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let otp: string;
+  try {
+    await connectDB();
+    otp = await issueOtp(email);
+  } catch (error) {
+    logError('Failed to issue OTP', error);
+    return NextResponse.json({ error: 'Unable to send OTP right now' }, { status: 500 });
+  }
+
   const emailConfig = getEmailConfig();
+
   if (!emailConfig) {
+    if (!isProduction()) {
+      logInfo('OTP generated (email not configured, dev fallback)', { email, otp });
+      return NextResponse.json({
+        message: 'Email is not configured. Use the development OTP shown below.',
+        devOtp: otp,
+      });
+    }
     logError('Email configuration is incomplete');
     return NextResponse.json(
       { error: 'Email service is temporarily unavailable' },
@@ -39,9 +56,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await connectDB();
-    const otp = await issueOtp(email);
-
     const transporter = nodemailer.createTransport({
       host: emailConfig.host,
       port: emailConfig.port,
@@ -62,7 +76,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'If the address is valid, an OTP has been sent.' });
   } catch (error) {
-    logError('Failed to send OTP', error);
+    logError('Failed to send OTP email', error);
+    if (!isProduction()) {
+      logInfo('Falling back to development OTP', { email, otp });
+      return NextResponse.json({
+        message: 'Email delivery failed. Use the development OTP shown below.',
+        devOtp: otp,
+      });
+    }
     return NextResponse.json({ error: 'Unable to send OTP right now' }, { status: 500 });
   }
 }

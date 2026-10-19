@@ -27,6 +27,7 @@ export function RegisterForm({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [devOtp, setDevOtp] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -126,12 +127,20 @@ export function RegisterForm({
         body: JSON.stringify({ email: formData.identifier }),
       });
 
+      const data = await res.json().catch(() => null);
+
       if (!res.ok) {
-        throw new Error("Failed to send OTP");
+        throw new Error(data?.error || "Failed to send OTP");
       }
 
       setOtpSent(true);
-      toast({ title: "OTP sent succesfully", variant: "success" })
+      if (data?.devOtp) {
+        setDevOtp(data.devOtp);
+        setFormData((prev) => ({ ...prev, otp: data.devOtp }));
+        toast({ title: "Email not configured — OTP filled in for development" });
+      } else {
+        toast({ title: "OTP sent successfully", variant: "success" });
+      }
     } catch (error) {
       setErrors({
         otp: error instanceof Error ? error.message : "Failed to send OTP",
@@ -220,6 +229,11 @@ export function RegisterForm({
           </div>
           {errors.otp && (
             <p className="text-sm text-red-500">{errors.otp}</p>
+          )}
+          {devOtp && (
+            <p className="text-sm text-amber-600">
+              Development OTP: <span className="font-mono font-semibold">{devOtp}</span>
+            </p>
           )}
         </div>
 
