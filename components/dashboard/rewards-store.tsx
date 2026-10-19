@@ -5,130 +5,100 @@ import { Coins, Star, Package, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from "next/image";
 import { Sidebar } from './sidebar';
-import { useSession } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
-import { POST } from '@/app/api/auth/register/route';
+import type { LucideIcon } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
-const products = [
-  {
-    name: 'Gym Premium Membership',
-    description: '1 Month of exclusive premium features',
-    tokens: 500,
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    features: ['Personalized workout plans', 'Nutrition tracking', 'Priority support'],
-    icon: Star,
-  },
-  {
-    name: 'Zara T Shirt',
-    description: 'Zara Cotton T Shirt',
-    tokens: 100,
-    image: 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    features: ['5 resistance levels', '100% Cotton', 'M Size'],
-    icon: Package,
-  },
-  {
-    name: 'Smart Water Bottle',
-    description: 'Track your hydration with smart sensors',
-    tokens: 1,
-    image: 'https://images.unsplash.com/photo-1555667865-f4be32e8cc29?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    features: ['LED indicators', 'App connectivity', 'Temperature sensing'],
-    icon: Zap,
-  },
-  {
-    name: 'Darjeeling Tour Package',
-    description: '3 days and 2 nights in Darjeeling',
-    tokens: 4000,
-    image: 'https://images.unsplash.com/photo-1622308644420-b20142dc993c?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    features: ['Hotel stay', 'Sightseeing', 'Meals included'],
-    icon: Package,
-  },
-];
+type StoreProduct = {
+  slug: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  features: string[];
+};
 
+const PRODUCT_ICONS: Record<string, LucideIcon> = {
+  'gym-premium-membership': Star,
+  'zara-t-shirt': Package,
+  'smart-water-bottle': Zap,
+  'darjeeling-tour-package': Package,
+};
 
 export default function RewardsDashboard() {
-
   const [tokens, setTokens] = useState(0);
+  const [products, setProducts] = useState<StoreProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { data: session } = useSession();
 
   const fetchUserData = useCallback(async () => {
     try {
-      const email = session?.user?.email;
-      if (!email) {
-        throw new Error('No user email found');
-      }
-
-      const response = await fetch(
-        `/api/getCurrUser?email=${encodeURIComponent(email)}`
-      );
-
+      const response = await fetch('/api/getCurrUser');
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Failed to load token balance');
       }
-
       const data = await response.json();
       setTokens(data.data.user.tokens);
     } catch (err) {
       console.error("Error occurred while getting tokens:", err);
-    } finally {
     }
-  }, [session?.user?.email]);
+  }, []);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const response = await fetch('/api/products');
+      if (!response.ok) {
+        throw new Error('Failed to load products');
+      }
+      const data = await response.json();
+      setProducts(data.products);
+    } catch (err) {
+      console.error("Error occurred while getting products:", err);
+      toast({ title: 'Unable to load rewards store', variant: 'destructive' });
+    }
+  }, []);
 
   useEffect(() => {
-    if (session?.user?.email) {
-      fetchUserData();
-    }
-  }, [session, fetchUserData]);
+    fetchUserData();
+    fetchProducts();
+  }, [fetchUserData, fetchProducts]);
 
-  const handlePurchase = async (product: any) => {
+  const handlePurchase = async (product: StoreProduct) => {
     try {
       setIsLoading(true);
 
-      // send email
-      const sendEmail = await fetch('/api/user/sendEmail', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          body: `Purchase Successful!
-
-Congrats your purchase of ${product.name} has been successful! Your ${product.tokens} has been deducted and it shall reflect in your dashboard soon.
-
-You’ll receive it within 3 working days. Keep flexing and burning calories.
-
-Team 100xdevs`,
-          email: session?.user?.email,
-        })
-      })
-
-
-
-      const response = await fetch("/api/user/purchase", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tokens: product.tokens,
-          email: session?.user?.email,
-        })
+      const response = await fetch('/api/user/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.slug }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Purchase failed');
+        throw new Error(data.error || 'Purchase failed');
       }
 
-      alert(`Purchase successful for: ${product.name}`);
-      // send an email if needed
+      toast({ title: `Purchase successful: ${product.name}`, variant: 'success' });
 
+      if (data.purchaseId) {
+        await fetch('/api/user/sendEmail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ purchaseId: data.purchaseId }),
+        }).catch((err) => console.error('Confirmation email failed:', err));
+      }
     } catch (err) {
       console.error("Error while purchasing:", err);
-      alert('Purchase failed. Please try again.');
+      toast({
+        title: 'Purchase failed. Please try again.',
+        description: err instanceof Error ? err.message : undefined,
+        variant: 'destructive',
+      });
     } finally {
-      // Refresh user data after purchase attempt, regardless of success/failure
       await fetchUserData();
       setIsLoading(false);
     }
   };
-
-
 
   return (
     <div className="block sm:flex h-screen bg-background">
@@ -147,59 +117,62 @@ Team 100xdevs`,
               </div>
               <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
                 <Coins className="h-5 w-5 text-primary" />
-                <span className="font-semibold">{isLoading ? "Loading..." : tokens} tokens</span>
+                <span className="font-semibold">{tokens} tokens</span>
               </div>
             </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            {products.map((product) => (
-              <Card key={product.name} className="overflow-hidden">
-                <div className="relative h-48">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute right-4 top-4 rounded-full bg-background/90 p-2">
-                    <product.icon className="h-5 w-5 text-primary" />
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold">{product.name}</h3>
-                    <div className="flex items-center gap-1 text-primary">
-                      <Coins className="h-4 w-4" />
-                      <span>{product.tokens}</span>
+            {products.map((product) => {
+              const Icon = PRODUCT_ICONS[product.slug] || Package;
+              return (
+                <Card key={product.slug} className="overflow-hidden">
+                  <div className="relative h-48">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute right-4 top-4 rounded-full bg-background/90 p-2">
+                      <Icon className="h-5 w-5 text-primary" />
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {product.description}
-                  </p>
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium">Features:</h4>
-                    <ul className="mt-2 space-y-2">
-                      {product.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                          <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-semibold">{product.name}</h3>
+                      <div className="flex items-center gap-1 text-primary">
+                        <Coins className="h-4 w-4" />
+                        <span>{product.price}</span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {product.description}
+                    </p>
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium">Features:</h4>
+                      <ul className="mt-2 space-y-2">
+                        {product.features.map((feature) => (
+                          <li
+                            key={feature}
+                            className="flex items-center gap-2 text-sm text-muted-foreground"
+                          >
+                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <Button
+                      className="mt-4 w-full"
+                      onClick={() => handlePurchase(product)}
+                      disabled={product.price > tokens}
+                    >
+                      {product.price > tokens ? 'Not Enough Tokens' : isLoading ? "Redeeming..." : 'Redeem Now'}
+                    </Button>
                   </div>
-                  <Button
-                    className="mt-4 w-full"
-                    onClick={() => handlePurchase(product)}
-                    disabled={product.tokens > tokens}
-                  >
-                    {product.tokens > tokens ? 'Not Enough Tokens' : isLoading ? "Redeeming..." : 'Redeem Now'}
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </div>
       </main>

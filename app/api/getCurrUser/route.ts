@@ -1,66 +1,45 @@
-import connectDB from "@/utils/db";
-import { User } from "@/models/user";
-import { NextRequest, NextResponse } from "next/server";
-import { IUserLean, IUserResponse } from "@/types/user";
+import connectDB from '@/utils/db';
+import { User } from '@/models/user';
+import { getSessionUser } from '@/lib/auth';
+import { apiError, apiSuccess } from '@/lib/api';
+import { calculatePercentile } from '@/lib/rewards';
+import { logError } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
 
-export const dynamic = "force-dynamic";
+export async function GET() {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return apiError(401, 'Authentication required');
+    }
 
-export async function GET(request: NextRequest): Promise<NextResponse<IUserResponse>> {
-	try {
-		await connectDB();
+    await connectDB();
 
-		const searchParams = request.nextUrl.searchParams;
-		const email = searchParams.get('email');
+    const [higherRankedUsers, lowerRankedUsers, totalUsers] = await Promise.all([
+      User.countDocuments({ points: { $gt: user.points } }),
+      User.countDocuments({ points: { $lt: user.points } }),
+      User.countDocuments(),
+    ]);
 
-		if (!email) {
-			return NextResponse.json({
-				success: false,
-				message: "Email parameter is required"
-			}, { status: 400 });
-		}
+    const rank = higherRankedUsers + 1;
+    const percentile = calculatePercentile(totalUsers, lowerRankedUsers);
 
-		// Find the user and their points
-		const user = await User.findOne({ email }).lean<IUserLean>();
-
-		if (!user) {
-			return NextResponse.json({
-				success: false,
-				message: "User not found"
-			}, { status: 404 });
-		}
-
-		// Count how many users have more points than this user
-		const higherRankedUsers = await User.countDocuments({
-			points: { $gt: user.points }
-		});
-
-		const rank = higherRankedUsers + 1;
-		const totalUsers = await User.countDocuments();
-		const percentile = ((rank / totalUsers) * 100).toFixed(1);
-
-		return NextResponse.json({
-			success: true,
-			data: {
-				user: {
-					name: user.name,
-					points: user.points,
-					calories: user.calories,
-					tokens: user.token,
-
-				},
-				rank,
-				totalUsers,
-				percentile: `${percentile}%`,
-			}
-		}, { status: 200 });
-
-	} catch (error) {
-		console.error('Error fetching user rank:', error);
-		return NextResponse.json({
-			success: false,
-			message: "Failed to fetch user rank",
-			error: error instanceof Error ? error.message : "Unknown error occurred"
-		}, { status: 500 });
-	}
+    return apiSuccess({
+      data: {
+        user: {
+          name: user.name,
+          points: user.points,
+          calories: user.calories ?? 0,
+          tokens: user.token ?? 0,
+        },
+        rank,
+        totalUsers,
+        percentile,
+      },
+    });
+  } catch (error) {
+    logError('Error fetching user rank', error);
+    return apiError(500, 'Failed to fetch user data');
+  }
 }

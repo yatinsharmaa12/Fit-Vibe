@@ -79,12 +79,12 @@ export function RegisterForm({
       const data = await res.json();
 
       if (res.status !== 201) {
-        throw new Error(data.message || "Error during registration");
+        throw new Error(data.error || data.message || "Error during registration");
       }
 
       const signInResponse = await signIn("credentials", {
         redirect: false,
-        identifier: formData.identifier,
+        email: formData.identifier,
         password: formData.password,
       });
 

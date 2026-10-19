@@ -1,55 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import connectDB from '@/utils/db';
-import { User, IPose } from '@/models/user';
+import { User } from '@/models/user';
+import { getSessionUser } from '@/lib/auth';
+import { apiError, apiSuccess, readJson } from '@/lib/api';
+import { isRecord, validatePoseKeypoints } from '@/lib/validation';
+import { logError } from '@/lib/logger';
+
+const MAX_CUSTOM_POSES = 50;
 
 export async function POST(req: NextRequest) {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return apiError(401, 'Authentication required');
+    }
+
+    const body = await readJson(req);
+    if (!isRecord(body) || !isRecord(body.poseData)) {
+      return apiError(400, 'poseData is required');
+    }
+
+    const keypoints = validatePoseKeypoints(body.poseData.keypoints);
+    if (!keypoints) {
+      return apiError(400, 'Invalid pose data: 17 reliable keypoints are required');
+    }
+
+    const rawName = body.poseData.name;
+    const name =
+      typeof rawName === 'string' && rawName.trim().length > 0
+        ? rawName.trim().slice(0, 80)
+        : undefined;
+
+    if ((user.customPoses?.length || 0) >= MAX_CUSTOM_POSES) {
+      return apiError(409, 'Custom pose limit reached');
+    }
+
     await connectDB();
 
-    let body;
-    try {
-        body = await req.json();
-    } catch (error) {
-        return NextResponse.json({ message: 'Invalid JSON' }, { status: 400 });
-    }
+    const pose = { name, keypoints, createdAt: new Date() };
+    await User.findByIdAndUpdate(user._id, { $push: { customPoses: pose } });
 
-    const { email, poseData } = body;
-
-    if (!email || !poseData) {
-        return NextResponse.json({ message: 'Missing email or poseData' }, { status: 400 });
-    }
-
-    try {
-        const user = await User.findOne({ email });
-        if (!user) {
-            return NextResponse.json({ message: 'User not found' }, { status: 404 });
-        }
-
-        if (!user.customPoses) {
-            user.customPoses = [];
-        }
-
-        const newPose: IPose = {
-            keypoints: poseData.keypoints || [],
-            createdAt: new Date(),
-        };
-
-        user.customPoses.push(newPose);
-        await user.save();
-
-        console.log("Pose saved for user:", email);
-
-        return NextResponse.json(
-            {
-                message: 'Pose saved successfully',
-                pose: newPose,
-            },
-            { status: 200 }
-        );
-    } catch (error: any) {
-        console.error("Error saving pose:", error);
-        return NextResponse.json(
-            { message: 'Server error', error: error.message },
-            { status: 500 }
-        );
-    }
+    return apiSuccess({ message: 'Pose saved successfully', pose });
+  } catch (error) {
+    logError('Error saving pose', error);
+    return apiError(500, 'Unable to save pose');
+  }
 }

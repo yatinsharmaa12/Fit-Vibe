@@ -1,14 +1,9 @@
-import { ThemeProvider } from "@/components/dashboard/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
-import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
-
-
-const inter = Outfit({ subsets: ["latin"] });
+import { ThemeProvider } from '@/components/dashboard/theme-provider';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "FitVibe | Bajaj",
-  description: "FitVibe",
+  title: 'FitVibe',
+  description: 'FitVibe dashboard',
 };
 
 export default function DashboardLayout({
@@ -17,13 +12,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-       <body className={inter.className}>
-       <ThemeProvider attribute="class" defaultTheme="dark">
-          {children}
-          <Toaster />
-        </ThemeProvider>
-    </body>
-    </html>
+    <ThemeProvider attribute="class" defaultTheme="dark">
+      {children}
+    </ThemeProvider>
   );
 }

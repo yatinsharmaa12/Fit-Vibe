@@ -1,53 +1,46 @@
-import connectDB from "@/utils/db";
-import { User } from "@/models/user"
-import { NextRequest, NextResponse } from "next/server";
-import { image } from "@tensorflow/tfjs";
+import connectDB from '@/utils/db';
+import { User } from '@/models/user';
+import { getSessionUser } from '@/lib/auth';
+import { apiError, apiSuccess } from '@/lib/api';
+import { getCached } from '@/lib/redis';
+import { logError } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
 
-export const dynamic = "force-dynamic";
+const LEADERBOARD_LIMIT = 5;
 
-export async function GET(request: NextRequest) {
+async function fetchTopUsers() {
+  await connectDB();
+  const users = await User.find({})
+    .select('name points createdAt image')
+    .sort({ points: -1, createdAt: 1 })
+    .limit(LEADERBOARD_LIMIT)
+    .lean();
 
-	try {
+  return users.map((user) => ({
+    name: user.name || 'Anonymous',
+    points: user.points || 0,
+    createdAt: user.createdAt,
+    image: user.image,
+  }));
+}
 
+export async function GET() {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return apiError(401, 'Authentication required');
+    }
 
+    const users = await getCached(`leaderboard:top:${LEADERBOARD_LIMIT}`, fetchTopUsers, 60);
 
-		await connectDB();
-		{/* const allUsers = await User.find({}) */ }
-		const topUsers = await User.find({})
-			.select('-password') // Exclude password from the response
-			.sort({ points: -1 }) // Sort by points in descending order
-			.limit(5) // Get only 3 users
-			.lean();
-		// console.log(allUsers)
-		// return NextResponse.json({ message: "The db is connected", user: "users" });
-
-
-		return NextResponse.json(
-			{
-				success: true,
-				message: "Top users fetched successfully",
-				users: topUsers.map(user => ({
-					name: user.name,
-					// email: user.email,
-					points: user.points || 0,
-					createdAt: user.createdAt,
-					image: user.image,
-				})),
-				count: topUsers.length
-			},
-			{ status: 200 }
-		);
-
-	} catch (error) {
-		console.error('Error fetching top users:', error);
-		return NextResponse.json(
-			{
-				success: false,
-				message: "Failed to fetch top users",
-				error: error instanceof Error ? error.message : "Unknown error occurred"
-			},
-			{ status: 500 }
-		);
-	}
+    return apiSuccess({
+      message: 'Top users fetched successfully',
+      users,
+      count: users.length,
+    });
+  } catch (error) {
+    logError('Error fetching top users', error);
+    return apiError(500, 'Failed to fetch top users');
+  }
 }

@@ -1,10 +1,6 @@
 import mongoose from 'mongoose';
 
-// Ensure the MONGO_URI environment variable is defined
-const mongo_uri:any = process.env.MONGO_URI;
-if (!mongo_uri) {
-  throw new Error('Please define the MONGO_URI environment variable inside .env.local');
-}
+export const DB_NAME = process.env.MONGODB_DB || 'fitvibe';
 
 declare global {
   var mongooseCache: {
@@ -13,31 +9,32 @@ declare global {
   };
 }
 
-// Initialize mongooseCache if it doesn't exist
 globalThis.mongooseCache = globalThis.mongooseCache || { conn: null, promise: null };
 
-async function connectDB() {
-  // If a connection is already established, return it
+async function connectDB(): Promise<mongoose.Connection> {
   if (globalThis.mongooseCache.conn) {
     return globalThis.mongooseCache.conn;
   }
 
-  // If a connection promise doesn't exist, create one
-  if (!globalThis.mongooseCache.promise) {
-    const opts = {
-      bufferCommands: false,
-      dbName: 'Practice',
-    };
+  if (!process.env.MONGO_URI) {
+    throw new Error('MONGO_URI is not configured');
+  }
 
-    globalThis.mongooseCache.promise = mongoose.connect(mongo_uri, opts)
-      .then((mongoose) => mongoose.connection)
-      .catch((err) => {
-        console.error("MongoDB Connection Error:", err);
-        throw new Error("MongoDB connection failed");
+  if (!globalThis.mongooseCache.promise) {
+    globalThis.mongooseCache.promise = mongoose
+      .connect(process.env.MONGO_URI, {
+        bufferCommands: false,
+        dbName: DB_NAME,
+        serverSelectionTimeoutMS: 10000,
+      })
+      .then((instance) => instance.connection)
+      .catch((error) => {
+        globalThis.mongooseCache.promise = null;
+        console.error('MongoDB connection error:', error instanceof Error ? error.message : error);
+        throw new Error('Database connection failed');
       });
   }
 
-  // Await the promise to establish the connection
   globalThis.mongooseCache.conn = await globalThis.mongooseCache.promise;
   return globalThis.mongooseCache.conn;
 }

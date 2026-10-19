@@ -32,12 +32,11 @@ export default function LoginPage() {
             />
             <div className="flex items-center">
               <span className="bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                FlexIt
+                Fit
               </span>
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Out
+                Vibe
               </span>
-              <span className="text-gray-900 dark:text-white">.</span>
             </div>
           </Link>
         </div>
@@ -51,7 +50,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>© 2026 FlexItOut. All rights reserved.</p>
+          <p>© 2026 FitVibe. All rights reserved.</p>
         </div>
       </div>
 
@@ -68,7 +67,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-white">
           <div className="max-w-lg space-y-6 text-center">
             <h2 className="text-4xl font-bold leading-tight">
-              Welcome Back to FlexItOut
+              Welcome Back to FitVibe
             </h2>
             <p className="text-lg text-white/90">
               Track your fitness journey, challenge yourself, and achieve your goals with our innovative pose tracking technology.

@@ -46,19 +46,18 @@ export default function UpdateProfileForm() {
         },
         body: JSON.stringify({
           name: values.name,
-          email: session?.user?.email,
-          curr_password: values.currentPassword,
-          new_password: values.newPassword,
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
         }),
       });
 
       if (response.ok) {
-        toast({ title: "User Updated Succesfully", variant: "success" });
+        toast({ title: "User Updated Successfully", variant: "success" });
       } else {
         const errorData = await response.json();
-        toast({ title: `${errorData.message}` });
+        toast({ title: errorData.error || "Unable to update profile", variant: "destructive" });
 
-        console.error('Error updating profile:', errorData.message);
+        console.error('Error updating profile:', errorData.error);
       }
     } catch (error) {
       console.error('Error updating profile:', error);

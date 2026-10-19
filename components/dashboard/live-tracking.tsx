@@ -18,6 +18,7 @@ export function LiveTracking() {
     setCurrExercise,
     liveFeedback,
     repFeedback,
+    formScore,
     customPoses,
     selectedCustomPose,
     setSelectedCustomPose,
@@ -112,12 +113,12 @@ export function LiveTracking() {
             className="bg-zinc-800 text-white p-2 rounded-md border border-zinc-700"
             onChange={(e) => {
               const pose = customPoses.find(p => p._id === e.target.value);
-              setSelectedCustomPose(pose);
+              setSelectedCustomPose(pose ?? null);
             }}
             value={selectedCustomPose?._id || ""}
           >
             <option value="" disabled>Select a Custom Pose</option>
-            {customPoses.map((pose: any) => (
+            {customPoses.map((pose) => (
               <option key={pose._id} value={pose._id}>
                 Pose created on {new Date(pose.createdAt).toLocaleDateString()}
               </option>
@@ -170,7 +171,7 @@ export function LiveTracking() {
             <>
               <div className="absolute top-4 left-4 z-30 flex flex-col gap-2">
                 <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${liveFeedback.includes("Good") ? "bg-green-500" : "bg-red-500"} animate-pulse`} />
+                  <div className={`w-2 h-2 rounded-full ${formScore >= 80 ? "bg-green-500" : "bg-red-500"} animate-pulse`} />
                   <span className="text-white font-medium text-sm">{liveFeedback || "Detecting..."}</span>
                 </div>
                 {repFeedback && (

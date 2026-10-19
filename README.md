@@ -40,6 +40,41 @@ FitVibe is an innovative platform designed to engage users in daily challenges, 
    ```
    Visit `http://localhost:3000` to explore the application.
 
+## Verification
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
+
+## Docker
+
+The Compose stack runs the app, MongoDB, and Redis. Create a `.env` file from
+`.env.example` and set at least `NEXTAUTH_SECRET`, `MONGO_ROOT_PASSWORD`,
+`MONGO_APP_PASSWORD`, and `MONGO_EXPRESS_PASSWORD`.
+
+```bash
+docker compose up --build
+```
+
+MongoDB is initialized with a least-privilege `fitvibe` application user via
+`mongo-init.js`. Administration UIs (Mongo Express and Redis Commander) are
+bound to localhost and only start with the `tools` profile:
+
+```bash
+docker compose --profile tools up
+```
+
+The application uses a single database named by `MONGODB_DB` (default
+`fitvibe`). If you are upgrading an existing deployment that used the legacy
+`bajaj_*` collections or the misspelled `challanges` field, run:
+
+```bash
+MONGO_URI="..." MIGRATE_FROM_DB=Practice MONGODB_DB=fitvibe node scripts/migrate-branding.mjs
+```
+
 ## Contributing
 
 We welcome contributions from the community. To contribute:

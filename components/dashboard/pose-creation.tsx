@@ -131,8 +131,6 @@ export default function PoseCreation() {
 
   // Save pose action; call API to store pose data
   const handleSavePose = async () => {
-    console.log("Session state:", session);
-    console.log("User email:", session?.user?.email);
     if (poseData && session?.user?.email) {
       try {
         const response = await fetch("/api/user/addPose", {
@@ -140,19 +138,15 @@ export default function PoseCreation() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            email: session.user.email,
-            poseData: poseData,
-          }),
+          body: JSON.stringify({ poseData }),
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          toast({ title: "Pose saved successfully!", variant: "default" }); // Variant 'success' might not exist in default shadcn toast, check usage
-          console.log("Saved pose:", data.pose);
+          toast({ title: "Pose saved successfully!", variant: "success" });
         } else {
-          toast({ title: "Failed to save pose", description: data.message, variant: "destructive" });
+          toast({ title: "Failed to save pose", description: data.error, variant: "destructive" });
         }
       } catch (error) {
         console.error("Error saving pose:", error);

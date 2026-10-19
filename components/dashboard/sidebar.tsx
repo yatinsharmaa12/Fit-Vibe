@@ -19,7 +19,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -43,8 +43,7 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "GET" });
-      window.location.href = "/"
+      await signOut({ callbackUrl: "/" });
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -84,7 +83,7 @@ export function Sidebar() {
 
             <Image src={logo} alt="logo" width={25} height={25} className="mr-2" />
             <Link href="/">
-              FlexIt<span className="text-blue-500">Out</span>.
+              Fit<span className="text-blue-500">Vibe</span>
             </Link>
           </div>
         </div>
@@ -136,7 +135,7 @@ export function Sidebar() {
 
             <Image src={logo} alt="logo" width={25} height={25} className="mr-2" />
             <Link href="/">
-              FlexIt<span className="text-blue-500">Out</span>.
+              Fit<span className="text-blue-500">Vibe</span>
             </Link>
           </div>
         </div>

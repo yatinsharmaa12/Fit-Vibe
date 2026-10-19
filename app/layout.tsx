@@ -13,7 +13,7 @@ const inter = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "FitVibe | Bajaj",
+  title: "FitVibe",
   description: "FitVibe - Track your fitness journey with AI-powered pose detection",
   keywords: ["fitness", "workout", "pose detection", "AI fitness"],
   authors: [{ name: "FitVibe Team" }],

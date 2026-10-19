@@ -1,43 +1,53 @@
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
-// Interface for Mongoose Document (used in model)
-export interface IUser extends Document {
+export interface IUserChallengeLean {
+  challengeId: string;
+  startedAt: Date;
+  completedAt?: Date;
+  progress?: number;
+}
+
+export interface IPoseLean {
+  _id?: Types.ObjectId;
+  name?: string;
+  keypoints: {
+    x: number;
+    y: number;
+    z?: number;
+    score?: number;
+    name?: string;
+  }[];
+  createdAt: Date;
+}
+
+export interface IUserLean {
+  _id: Types.ObjectId;
   name?: string;
   email: string;
-  emailVerified?: Date;
-  image?: string;
+  password?: string;
+  provider?: 'credentials' | 'google';
+  token?: number;
   points: number;
-  accounts?: Types.ObjectId[];
-  sessions?: Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Interface for lean queries (plain JavaScript objects)
-export interface IUserLean {
-  _id: string;
-  name: string;
-  email: string;
-  password: string;
-  token: number;
-  points: number;
-  calories: number;
-  createdAt: Date;
-  updatedAt: Date;
+  calories?: number;
+  challenges?: IUserChallengeLean[];
+  customPoses?: IPoseLean[];
+  createdAt?: Date;
+  updatedAt?: Date;
   emailVerified?: Date;
 }
 
-// Interface for API response
 export interface IUserResponse {
   success: boolean;
   data?: {
     user: {
       name?: string;
       points: number;
+      calories: number;
+      tokens: number;
     };
     rank: number;
     totalUsers: number;
-    percentile: string;
+    percentile: number;
   };
   message?: string;
   error?: string;

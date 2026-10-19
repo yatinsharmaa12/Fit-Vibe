@@ -18,18 +18,22 @@ export const validateRegistrationForm = (
     errors.email = "Please enter a valid email address";
   }
 
-  // Password validation
+  // Password validation (collect every applicable rule)
+  const passwordErrors: string[] = [];
   if (password.length < 8) {
-    errors.password = "Password must be at least 8 characters long";
+    passwordErrors.push("at least 8 characters");
   }
   if (!/[A-Z]/.test(password)) {
-    errors.password = "Password must contain at least one uppercase letter";
+    passwordErrors.push("one uppercase letter");
   }
   if (!/[a-z]/.test(password)) {
-    errors.password = "Password must contain at least one lowercase letter";
+    passwordErrors.push("one lowercase letter");
   }
   if (!/[0-9]/.test(password)) {
-    errors.password = "Password must contain at least one number";
+    passwordErrors.push("one number");
+  }
+  if (passwordErrors.length > 0) {
+    errors.password = `Password must contain ${passwordErrors.join(", ")}`;
   }
 
   // Confirm password validation

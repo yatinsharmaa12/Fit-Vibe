@@ -3,24 +3,25 @@ import mongoose, { Document } from 'mongoose';
 export interface IUser extends Document {
   name?: string;
   email: string;
-  password: string;
+  password?: string;
+  provider?: 'credentials' | 'google';
   emailVerified?: Date;
   image?: string;
   points: number;
   token: number;
   calories: number;
-  challanges: IUserChallenge[];
+  challenges: IUserChallenge[];
   customPoses: IPose[];
-  accounts?: mongoose.Types.ObjectId[];
-  sessions?: mongoose.Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-
 export interface IUserChallenge {
+  _id?: mongoose.Types.ObjectId;
   challengeId: string;
   startedAt: Date;
   completedAt?: Date;
-  progress: number;
+  progress?: number;
 }
 
 export interface IPose {
@@ -35,7 +36,6 @@ export interface IPose {
   createdAt: Date;
 }
 
-
 const userChallengeSchema = new mongoose.Schema<IUserChallenge>({
   challengeId: { type: String, required: true },
   startedAt: { type: Date, default: Date.now },
@@ -44,60 +44,62 @@ const userChallengeSchema = new mongoose.Schema<IUserChallenge>({
 });
 
 const poseSchema = new mongoose.Schema<IPose>({
-  name: { type: String },
+  name: { type: String, maxlength: 80 },
   keypoints: [{
     x: { type: Number, required: true },
     y: { type: Number, required: true },
     z: { type: Number },
-    score: { type: Number },
+    score: { type: Number, min: 0, max: 1 },
     name: { type: String }
   }],
   createdAt: { type: Date, default: Date.now }
 });
 
-
 const userSchema = new mongoose.Schema<IUser>({
-  name: String,
+  name: { type: String, trim: true, maxlength: 80 },
   email: {
     type: String,
     unique: true,
     required: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
-    required: true,
+    select: false,
+  },
+  provider: {
+    type: String,
+    enum: ['credentials', 'google'],
+    default: 'credentials',
   },
   emailVerified: Date,
-
   image: {
     type: String,
-    default: "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1739812418~exp=1739816018~hmac=2442be3cd30435c77e5ab68924abe83003c70c93db0a9ef781b4625d57154d82&w=740",
+    default: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
   },
   points: {
     type: Number,
     default: 0,
+    min: 0,
   },
   calories: {
     type: Number,
     default: 0,
+    min: 0,
   },
   token: {
     type: Number,
     default: 0,
+    min: 0,
   },
-  challanges: [userChallengeSchema],
+  challenges: [userChallengeSchema],
   customPoses: [poseSchema],
-  accounts: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Account'
-  }],
-  sessions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Session'
-  }]
 }, {
-  collection: "bajaj_users",
-  timestamps: true
+  collection: 'fitvibe_users',
+  timestamps: true,
 });
 
-export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
+export const User =
+  (mongoose.models.User as mongoose.Model<IUser>) ||
+  mongoose.model<IUser>('User', userSchema);

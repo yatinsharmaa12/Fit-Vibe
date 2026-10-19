@@ -1,62 +1,78 @@
-import connectDB from "@/utils/db";
-import { NextRequest, NextResponse } from "next/server";
-import { User } from "@/models/user";
-import bcrypt from "bcryptjs";
+import { NextRequest } from 'next/server';
+import bcrypt from 'bcryptjs';
+import connectDB from '@/utils/db';
+import { User } from '@/models/user';
+import { getSessionUser } from '@/lib/auth';
+import { apiError, apiSuccess, readJson } from '@/lib/api';
+import { isRateLimited } from '@/lib/rate-limit';
+import { isRecord, validateName, validatePassword } from '@/lib/validation';
+import { logError } from '@/lib/logger';
 
 export async function PUT(req: NextRequest) {
-	try {
-		await connectDB();
+  try {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
+      return apiError(401, 'Authentication required');
+    }
 
-		const body = await req.json();
-		const { name, email, curr_password, new_password } = body;
+    const limited = await isRateLimited(`profile-update:${sessionUser._id}`, {
+      limit: 10,
+      windowSeconds: 600,
+      failClosed: true,
+    });
+    if (limited) {
+      return apiError(429, 'Too many profile updates. Please try again later.');
+    }
 
-		if (!email || !curr_password) {
-			return NextResponse.json(
-				{ message: "Missing required fields" },
-				{ status: 400 }
-			);
-		}
+    const body = await readJson(req);
+    if (!isRecord(body)) {
+      return apiError(400, 'Invalid request body');
+    }
 
-		const user = await User.findOne({ email });
+    const hasName = body.name !== undefined;
+    const hasNewPassword = typeof body.newPassword === 'string' && body.newPassword.length > 0;
 
-		if (!user) {
-			return NextResponse.json(
-				{ message: 'User not found' },
-				{ status: 404 }
-			);
-		}
+    if (!hasName && !hasNewPassword) {
+      return apiError(400, 'Nothing to update');
+    }
 
-		const isValid = await bcrypt.compare(curr_password, user.password);
+    await connectDB();
+    const user = await User.findById(sessionUser._id).select('+password');
+    if (!user) {
+      return apiError(404, 'User not found');
+    }
 
-		if (!isValid) {
-			return NextResponse.json(
-				{ message: "Incorrect current password" },
-				{ status: 400 }
-			);
-		}
+    if (hasName) {
+      const name = validateName(body.name);
+      if (!name) {
+        return apiError(400, 'Name must be between 2 and 80 characters');
+      }
+      user.name = name;
+    }
 
+    if (hasNewPassword) {
+      const passwordErrors = validatePassword(body.newPassword);
+      if (passwordErrors.length > 0) {
+        return apiError(400, passwordErrors.join('. '));
+      }
 
-		if (name !== undefined) {
-			user.name = name;
-		}
+      if (user.password) {
+        const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
+        const isValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isValid) {
+          return apiError(403, 'Incorrect current password');
+        }
+      }
 
-		if (new_password !== undefined && new_password !== "") {
-			const hashedNewPassword = await bcrypt.hash(new_password, 10);
-			user.password = hashedNewPassword;
-		}
+      user.password = await bcrypt.hash(body.newPassword as string, 10);
+      if (!user.provider) user.provider = 'credentials';
+    }
 
-		await user.save();
+    await user.save();
 
-		return NextResponse.json(
-			{ message: "User updated successfully" },
-			{ status: 200 }
-		);
-
-	} catch (error) {
-		console.error("Error while updating user:", error);
-		return NextResponse.json(
-			{ message: `Error while updating user: ${error}` },
-			{ status: 500 }
-		);
-	}
+    return apiSuccess({ message: 'User updated successfully' });
+  } catch (error) {
+    logError('Error while updating user', error);
+    return apiError(500, 'Unable to update profile');
+  }
 }

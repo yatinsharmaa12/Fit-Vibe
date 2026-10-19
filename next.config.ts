@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Produce a self-contained server bundle for the Docker runner stage
+  output: 'standalone',
+
   /* Performance Optimizations */
   
   // Image optimization
@@ -36,7 +39,7 @@ const nextConfig: NextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', '@radix-ui/react-icons'],
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
 
   // Production optimizations

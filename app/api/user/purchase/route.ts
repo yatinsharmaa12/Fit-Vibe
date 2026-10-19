@@ -1,69 +1,82 @@
-import connectDB from "@/utils/db";
-import { NextRequest, NextResponse } from "next/server";
-import { User } from "@/models/user";
+import { NextRequest } from 'next/server';
+import { Types } from 'mongoose';
+import connectDB from '@/utils/db';
+import { User } from '@/models/user';
+import { Product } from '@/models/product';
+import { Purchase } from '@/models/purchase';
+import { getSessionUser } from '@/lib/auth';
+import { apiError, apiSuccess, getClientIp, readJson } from '@/lib/api';
+import { isRateLimited } from '@/lib/rate-limit';
+import { ensureProductsSeeded } from '@/lib/catalog';
+import { isRecord } from '@/lib/validation';
+import { logError } from '@/lib/logger';
 
-export async function PUT(request: NextRequest) {
-	try {
-		await connectDB();
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return apiError(401, 'Authentication required');
+    }
 
-		const body = await request.json();
-		const { email, tokens } = body;
+    const limited = await isRateLimited(`purchase:${user._id}:${getClientIp(request)}`, {
+      limit: 20,
+      windowSeconds: 600,
+      failClosed: true,
+    });
+    if (limited) {
+      return apiError(429, 'Too many purchase attempts. Please try again later.');
+    }
 
-		// Validate inputs
-		if (!email || tokens === undefined) {
-			return NextResponse.json(
-				{ message: 'Missing required fields' },
-				{ status: 400 }
-			);
-		}
+    const body = await readJson(request);
+    const productId = isRecord(body) && typeof body.productId === 'string' ? body.productId.trim() : null;
 
-		// Convert tokens to integer and validate
-		const tokenAmount = parseInt(tokens);
-		if (isNaN(tokenAmount) || tokenAmount <= 0) {
-			return NextResponse.json(
-				{ message: 'Invalid tokens value - must be a positive integer' },
-				{ status: 400 }
-			);
-		}
+    if (!productId) {
+      return apiError(400, 'A productId is required');
+    }
 
-		const user = await User.findOne({ email });
-		if (!user) {
-			return NextResponse.json(
-				{ message: 'User not found' },
-				{ status: 404 }
-			);
-		}
+    await connectDB();
+    await ensureProductsSeeded();
 
-		// Initialize and ensure token is an integer
-		const currentTokens = user.token || 0;
+    const product = Types.ObjectId.isValid(productId)
+      ? await Product.findOne({ _id: productId, active: true })
+      : await Product.findOne({ slug: productId.toLowerCase(), active: true });
 
-		// Check if user has enough tokens
-		if (currentTokens < tokenAmount) {
-			return NextResponse.json(
-				{ message: 'Insufficient tokens' },
-				{ status: 400 }
-			);
-		}
+    if (!product) {
+      return apiError(404, 'Product not found');
+    }
 
-		console.log("tokens before update:", currentTokens);
-		user.token = currentTokens - tokenAmount;
-		console.log("tokens after update:", user.token);
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: user._id, token: { $gte: product.price } },
+      { $inc: { token: -product.price } },
+      { new: true }
+    )
+      .select('token')
+      .lean();
 
-		await user.save();
+    if (!updatedUser) {
+      return apiError(409, 'Insufficient tokens');
+    }
 
-		return NextResponse.json(
-			{
-				message: 'User updated successfully',
-				remainingTokens: user.token
-			},
-			{ status: 200 }
-		);
+    const purchase = await Purchase.create({
+      user: user._id,
+      product: product._id,
+      productSlug: product.slug,
+      tokens: product.price,
+      status: 'completed',
+    });
 
-	} catch (error) {
-		console.error('Error updating user:', error);
-		return NextResponse.json(
-			{ message: 'Internal server error' },
-			{ status: 500 }
-		);
-	}
+    return apiSuccess({
+      message: 'Purchase completed',
+      purchaseId: purchase._id.toString(),
+      remainingTokens: updatedUser.token,
+      product: {
+        slug: product.slug,
+        name: product.name,
+        price: product.price,
+      },
+    });
+  } catch (error) {
+    logError('Purchase failed', error);
+    return apiError(500, 'Unable to complete purchase');
+  }
 }

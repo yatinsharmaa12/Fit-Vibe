@@ -3,7 +3,7 @@
 import logo from "@/public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
     LayoutDashboard,
@@ -40,17 +40,12 @@ const navigation = [
 
 export function DashboardNavbar() {
     const pathname = usePathname();
-    const router = useRouter();
     const { data: session } = useSession();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
-        // await signOut({ redirect: false });
-        // router.push("/"); 
-        // Matching sidebar behavior:
         try {
-            await fetch("/api/auth/logout", { method: "GET" });
-            window.location.href = "/"
+            await signOut({ callbackUrl: "/" });
         } catch (error) {
             console.error("Logout failed:", error);
         }
