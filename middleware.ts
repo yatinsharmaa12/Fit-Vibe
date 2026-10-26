@@ -19,6 +19,26 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestId = crypto.randomUUID();
 
+  if (!token && pathname.startsWith('/dashboard')) {
+    const cookieNames = request.cookies.getAll().map(({ name }) => name);
+    const secureSessionCookiePresent = cookieNames.some((name) =>
+      /^__Secure-next-auth\.session-token(?:\.\d+)?$/.test(name)
+    );
+    const plainSessionCookiePresent = cookieNames.some((name) =>
+      /^next-auth\.session-token(?:\.\d+)?$/.test(name)
+    );
+    const rawTokenDetected = Boolean(
+      await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, raw: true })
+    );
+
+    console.warn('Dashboard auth token unavailable', {
+      secureSessionCookiePresent,
+      plainSessionCookiePresent,
+      rawTokenDetected,
+      secretConfigured: Boolean(process.env.NEXTAUTH_SECRET),
+    });
+  }
+
   const isPublicPath =
     pathname === '/' || publicPaths.some((path) => pathname.startsWith(path)) || isStaticAsset(pathname);
 
