@@ -15,7 +15,14 @@ function isStaticAsset(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  // NextAuth names the session cookie from the request's protocol. Match that
+  // choice here instead of relying on NEXTAUTH_URL in the edge runtime.
+  const secureCookie = request.nextUrl.protocol === 'https:';
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie,
+  });
   const { pathname } = request.nextUrl;
   const requestId = crypto.randomUUID();
 
@@ -28,10 +35,16 @@ export async function middleware(request: NextRequest) {
       /^next-auth\.session-token(?:\.\d+)?$/.test(name)
     );
     const rawTokenDetected = Boolean(
-      await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET, raw: true })
+      await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+        secureCookie,
+        raw: true,
+      })
     );
 
     console.warn('Dashboard auth token unavailable', {
+      secureCookieExpected: secureCookie,
       secureSessionCookiePresent,
       plainSessionCookiePresent,
       rawTokenDetected,
