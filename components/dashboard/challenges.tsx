@@ -4,7 +4,6 @@ import { Trophy, Gift, Timer, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { DashboardNavbar } from './dashboard-navbar';
 import { toast } from '@/hooks/use-toast';
 import type { LucideIcon } from 'lucide-react';
 
@@ -90,9 +89,6 @@ export default function ChallengesDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <DashboardNavbar />
-
       <main className="p-4 md:p-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12">
@@ -190,6 +186,5 @@ export default function ChallengesDashboard() {
           )}
         </div>
       </main>
-    </div>
   );
 }

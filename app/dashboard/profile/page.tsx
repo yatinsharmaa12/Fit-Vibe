@@ -1,27 +1,19 @@
-import UpdateProfileForm from '@/components/dashboard/profile-management'
-import { Sidebar } from '@/components/dashboard/sidebar'
+import UpdateProfileForm from '@/components/dashboard/profile-management';
 
-const leaderboardDashboard = () => {
+export default function ProfilePage() {
   return (
-    <div className="block sm:flex h-screen bg-background">
-      <div className="w-[100%] sm:w-64 block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-blue-500">Manage Profile</h1>
-            <p className="text-muted-foreground mt-2">
-              Update your profile details here.
-            </p>
-          </div>
-          <div className="grid gap-6">
-         <UpdateProfileForm/>
-          </div>
+    <main className="p-4 md:p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12">
+          <h1 className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-4xl font-black text-transparent">
+            Manage Profile
+          </h1>
+          <p className="mt-3 max-w-2xl text-lg text-zinc-400">
+            Update your profile details here.
+          </p>
         </div>
-      </main>
-    </div>
-  )
+        <UpdateProfileForm />
+      </div>
+    </main>
+  );
 }
-
-export default leaderboardDashboard

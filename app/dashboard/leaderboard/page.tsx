@@ -1,28 +1,21 @@
-import { Leaderboard } from '@/components/dashboard/leaderboard'
-import { Sidebar } from '@/components/dashboard/sidebar'
-import React from 'react'
+import { Leaderboard } from '@/components/dashboard/leaderboard';
 
-const leaderboardDashboard = () => {
+export default function LeaderboardPage() {
   return (
-    <div className="block sm:flex h-screen bg-background">
-      <div className="w-[100%] sm:w-64 block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-blue-500">Leaderboard</h1>
-            <p className="text-muted-foreground mt-2">
-                Compete with others to earn tokens and climb the leaderboard
-            </p>
-          </div>
-          <div className="grid gap-6">
-          <Leaderboard/>
-          </div>
+    <main className="p-4 md:p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12">
+          <h1 className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-4xl font-black text-transparent">
+            Leaderboard
+          </h1>
+          <p className="mt-3 max-w-2xl text-lg text-zinc-400">
+            See the top performers ranked by total workout points.
+          </p>
         </div>
-      </main>
-    </div>
-  )
+        <div className="max-w-3xl">
+          <Leaderboard showFullLink={false} />
+        </div>
+      </div>
+    </main>
+  );
 }
-
-export default leaderboardDashboard

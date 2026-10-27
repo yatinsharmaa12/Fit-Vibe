@@ -18,6 +18,7 @@ async function fetchTopUsers() {
     .lean();
 
   return users.map((user) => ({
+    id: String(user._id),
     name: user.name || 'Anonymous',
     points: user.points || 0,
     createdAt: user.createdAt,
@@ -32,7 +33,8 @@ export async function GET() {
       return apiError(401, 'Authentication required');
     }
 
-    const users = await getCached(`leaderboard:top:${LEADERBOARD_LIMIT}`, fetchTopUsers, 60);
+    // Version the payload so cached rows without IDs are not reused.
+    const users = await getCached(`leaderboard:top:v2:${LEADERBOARD_LIMIT}`, fetchTopUsers, 60);
 
     return apiSuccess({
       message: 'Top users fetched successfully',

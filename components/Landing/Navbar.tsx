@@ -1,186 +1,35 @@
 "use client";
 
-import logo from "@/public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowUpRight } from "lucide-react";
+import logo from "@/public/logo.png";
 
-export const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+const links = [
+  { label: "Features", href: "#features" },
+  { label: "How it works", href: "#how-it-works" },
+  { label: "Questions", href: "#questions" },
+];
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
+export function Navbar() {
+  const [open, setOpen] = useState(false);
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
-    };
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
 
   return (
-    <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-            ? "bg-black/80 backdrop-blur-xl border-b border-white/10 py-4"
-            : "bg-transparent py-6"
-          }`}
-      >
-        <div className="container px-4 mx-auto sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between relative">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link
-                href="/"
-                className="flex items-center rounded outline-none font-bold text-2xl focus:ring-yellow-400 focus:ring-offset-2"
-              >
-                <Image
-                  src={logo}
-                  alt="FitVibe logo"
-                  width={50}
-                  height={50}
-                  className="mr-3"
-                />
-                <div className="flex text-white">
-                  Fit<span className="text-yellow-400">Vibe</span>
-                </div>
-              </Link>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="flex lg:hidden">
-              <button
-                type="button"
-                className="text-white hover:text-yellow-400 transition-colors z-50 p-2"
-                onClick={toggleMobileMenu}
-                aria-label="Toggle menu"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="w-7 h-7" />
-                ) : (
-                  <Menu className="w-7 h-7" />
-                )}
-              </button>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:space-x-8">
-              <a
-                href="https://github.com/Aryainguz/fitvibe"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Contribute
-              </a>
-              <Link
-                href="/dashboard/challenges"
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Challenges
-              </Link>
-              <Link
-                href="/dashboard/rewards"
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Rewards
-              </Link>
-              <Link
-                href="/dashboard/leaderboard"
-                className="text-gray-300 hover:text-white transition-colors font-medium"
-              >
-                Leaderboard
-              </Link>
-            </nav>
-
-            {/* Desktop CTA */}
-            <div className="hidden lg:flex lg:items-center lg:space-x-4">
-              <Link href="/login">
-                <button className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2">
-                  Login
-                </button>
-              </Link>
-              <Link href="/dashboard">
-                <button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-full transition-all duration-200 shadow-lg hover:shadow-yellow-400/25">
-                  Dashboard
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Menu Overlay */}
-      <div
-        className={`lg:hidden fixed inset-0 z-40 bg-black/95 backdrop-blur-xl transform transition-all duration-300 ${isMobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-          }`}
-      >
-        <div className="flex flex-col h-full pt-24 pb-8 px-6">
-          <nav className="flex flex-col items-center justify-center flex-grow space-y-8">
-            <Link
-              href="/dashboard/challenges"
-              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              Challenges
-            </Link>
-            <Link
-              href="/dashboard/rewards"
-              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              Rewards
-            </Link>
-            <Link
-              href="/dashboard/leaderboard"
-              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              Leaderboard
-            </Link>
-            <a
-              href="https://github.com/Aryainguz/fitvibe"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-3xl font-medium text-white hover:text-yellow-400 transition-colors"
-              onClick={toggleMobileMenu}
-            >
-              Contribute
-            </a>
-
-            <div className="pt-8 flex flex-col gap-4 w-full max-w-xs">
-              <Link href="/login" onClick={toggleMobileMenu}>
-                <button className="w-full text-white border border-white/30 hover:bg-white/10 font-bold px-8 py-4 rounded-full transition-all duration-200">
-                  Login
-                </button>
-              </Link>
-              <Link href="/dashboard" onClick={toggleMobileMenu}>
-                <button className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-8 py-4 rounded-full transition-all duration-200">
-                  Dashboard
-                </button>
-              </Link>
-            </div>
-          </nav>
-        </div>
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#090b09]/95 text-white backdrop-blur-lg">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-yellow-400 focus:p-3 focus:text-black">Skip to content</a>
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
+        <Link href="/" aria-label="FitVibe home" className="flex items-center gap-2 text-xl font-bold tracking-tight"><Image src={logo} alt="" width={32} height={32} /><span>Fit<span className="text-yellow-400">Vibe</span></span></Link>
+        <nav aria-label="Main navigation" className="hidden items-center gap-8 text-sm text-zinc-400 md:flex">{links.map(link => <a key={link.href} href={link.href} className="transition-colors hover:text-white">{link.label}</a>)}</nav>
+        <div className="hidden items-center gap-6 text-sm md:flex"><Link href="/login" className="text-zinc-300 hover:text-white">Log in</Link><Link href="/dashboard" className="flex items-center gap-2 rounded-full bg-yellow-400 px-5 py-2.5 font-bold text-black hover:bg-yellow-300">Get started <ArrowUpRight className="h-4 w-4" /></Link></div>
+        <button type="button" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="home-mobile-menu" onClick={() => setOpen(!open)} className="rounded-lg p-2 text-white hover:bg-white/10 md:hidden">{open ? <X /> : <Menu />}</button>
       </div>
-    </>
+      {open && <nav id="home-mobile-menu" aria-label="Mobile navigation" className="space-y-1 border-t border-white/10 bg-[#111411] px-5 py-4 md:hidden">{links.map(link => <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-3 text-zinc-300 hover:bg-white/5">{link.label}</a>)}<div className="flex gap-3 pt-3"><Link href="/login" onClick={() => setOpen(false)} className="flex-1 rounded-full border border-white/20 px-4 py-3 text-center text-sm">Log in</Link><Link href="/dashboard" onClick={() => setOpen(false)} className="flex-1 rounded-full bg-yellow-400 px-4 py-3 text-center text-sm font-bold text-black">Get started</Link></div></nav>}
+    </header>
   );
-};
+}

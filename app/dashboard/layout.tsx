@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/components/dashboard/theme-provider';
+import { DashboardNavbar } from '@/components/dashboard/dashboard-navbar';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,7 +14,10 @@ export default function DashboardLayout({
 }>) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark">
-      {children}
+      <div className="min-h-screen bg-black text-white">
+        <DashboardNavbar />
+        {children}
+      </div>
     </ThemeProvider>
   );
 }

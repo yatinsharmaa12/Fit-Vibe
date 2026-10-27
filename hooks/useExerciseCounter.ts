@@ -1,8 +1,7 @@
 "use client";
 import { useRef, useState, useEffect, useCallback } from "react";
-import * as posedetection from "@tensorflow-models/pose-detection";
-import "@tensorflow/tfjs-backend-webgl";
-import * as tf from "@tensorflow/tfjs";
+import type * as posedetection from "@tensorflow-models/pose-detection";
+import { loadPoseEngine } from "@/lib/pose-engine";
 import type { SupportedExercise } from "@/lib/challenges";
 import { createCounterState, evaluateExercise, ExerciseKey } from "@/lib/exercise-counter";
 import { poseSimilarity } from "@/lib/pose";
@@ -43,6 +42,7 @@ export function useExerciseCounter() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [poseDetector, setPoseDetector] = useState<posedetection.PoseDetector | null>(null);
+  const poseLibraryRef = useRef<typeof posedetection | null>(null);
   const [enableDetection, setEnableDetection] = useState<boolean>(false);
   const [currExercise, setCurrExercise] = useState<ExerciseType | null>(null);
   const [exerciseCounts, setExerciseCounts] = useState<ExerciseCounts>({
@@ -103,14 +103,21 @@ export function useExerciseCounter() {
   }, []);
 
   useEffect(() => {
+    if (!enableDetection) {
+      setPoseDetector(null);
+      return;
+    }
     let disposed = false;
     let detector: posedetection.PoseDetector | null = null;
 
     async function initDetector() {
       try {
-        await tf.ready();
-        detector = await posedetection.createDetector(posedetection.SupportedModels.MoveNet, {
-          modelType: posedetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+        setLiveFeedback("Loading the workout tracker…");
+        const pose = await loadPoseEngine();
+        if (disposed) return;
+        poseLibraryRef.current = pose;
+        detector = await pose.createDetector(pose.SupportedModels.MoveNet, {
+          modelType: pose.movenet.modelType.SINGLEPOSE_LIGHTNING,
         });
         if (disposed) {
           detector.dispose();
@@ -119,6 +126,7 @@ export function useExerciseCounter() {
         setPoseDetector(detector);
       } catch (error) {
         console.error("Failed to initialize pose detector:", error);
+        if (!disposed) setLiveFeedback("Tracker could not load. Stop the session and try again.");
       }
     }
 
@@ -128,7 +136,7 @@ export function useExerciseCounter() {
       disposed = true;
       detector?.dispose();
     };
-  }, []);
+  }, [enableDetection]);
 
   useEffect(() => {
     let cancelled = false;
@@ -197,7 +205,8 @@ export function useExerciseCounter() {
         ctx.fill();
       }
     });
-    const adjacentPairs = posedetection.util.getAdjacentPairs(posedetection.SupportedModels.MoveNet);
+    const poseLibrary = poseLibraryRef.current;
+    const adjacentPairs = poseLibrary ? poseLibrary.util.getAdjacentPairs(poseLibrary.SupportedModels.MoveNet) : [];
     adjacentPairs.forEach(([i, j]) => {
       const kp1 = pose.keypoints[i];
       const kp2 = pose.keypoints[j];
@@ -248,6 +257,7 @@ export function useExerciseCounter() {
           }
 
           const poses = await poseDetector.estimatePoses(video);
+          if (cancelled) return;
           if (poses && poses.length > 0) {
             const pose = poses[0];
             const keypoints = pose.keypoints;

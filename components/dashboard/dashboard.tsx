@@ -1,14 +1,10 @@
 import { Leaderboard } from "./leaderboard";
 import LiveTracking from "./live-tracking";
 import { DailyProgressChart } from "./daily-progress-chart";
-import { DashboardNavbar } from "./dashboard-navbar";
 import { UserOverview } from "./user-overview";
 
 const MainDashboard = () => {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <DashboardNavbar />
-
       <main className="p-4 md:p-8">
         <div className="mx-auto max-w-7xl space-y-8">
           <div className="mb-8">
@@ -29,7 +25,6 @@ const MainDashboard = () => {
           </div>
         </div>
       </main>
-    </div>
   );
 };
 

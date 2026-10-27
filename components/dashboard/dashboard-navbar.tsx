@@ -3,7 +3,7 @@
 import logo from "@/public/logo.png";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
     LayoutDashboard,
@@ -40,6 +40,7 @@ const navigation = [
 
 export function DashboardNavbar() {
     const pathname = usePathname();
+    const router = useRouter();
     const { data: session } = useSession();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -76,6 +77,8 @@ export function DashboardNavbar() {
                                     <Link
                                         key={item.name}
                                         href={item.href}
+                                        onMouseEnter={() => router.prefetch(item.href)}
+                                        onFocus={() => router.prefetch(item.href)}
                                         className={cn(
                                             "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
                                             isActive
@@ -115,7 +118,7 @@ export function DashboardNavbar() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator className="bg-white/10" />
                                     <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white cursor-pointer">
-                                        <Link href="/dashboard/profile" className="flex w-full items-center">
+                                        <Link href="/dashboard/profile" onMouseEnter={() => router.prefetch('/dashboard/profile')} onFocus={() => router.prefetch('/dashboard/profile')} className="flex w-full items-center">
                                             <Settings className="mr-2 h-4 w-4" />
                                             Settings
                                         </Link>
@@ -191,6 +194,7 @@ export function DashboardNavbar() {
                                         <Link
                                             key={item.name}
                                             href={item.href}
+                                            onTouchStart={() => router.prefetch(item.href)}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                             className={cn(
                                                 "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all",

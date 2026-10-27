@@ -1,419 +1,117 @@
-"use client";
-
-import Hero3DBackground from "./Hero3DBackground";
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Activity, Trophy, Users, Target, Flame, Zap, Star, TrendingUp } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Camera, Check, ChevronDown, Dumbbell, Gift, ScanLine, ShieldCheck, Trophy } from "lucide-react";
 
-// --- Stats Section ---
-const StatsSection = () => (
-  <section className="relative py-20 bg-gradient-to-b from-black to-zinc-900">
-    <div className="container mx-auto px-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {[
-          { value: "50K+", label: "Active Users", icon: Users },
-          { value: "1M+", label: "Workouts Done", icon: Activity },
-          { value: "500K+", label: "Calories Burned", icon: Flame },
-          { value: "10K+", label: "Challenges Won", icon: Trophy },
-        ].map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: i * 0.1 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <stat.icon className="w-10 h-10 text-yellow-400 mx-auto mb-4" />
-            <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
-            <div className="text-gray-400 text-lg">{stat.label}</div>
-          </motion.div>
-        ))}
+const steps = [
+  { number: "01", title: "Pick your movement.", description: "Choose an exercise and check the camera guide before you begin." },
+  { number: "02", title: "Find your rhythm.", description: "See your reps and movement feedback as you work through each set." },
+  { number: "03", title: "Build your momentum.", description: "Complete challenges, collect tokens, and work your way up the leaderboard." },
+];
+
+const faqs = [
+  { question: "What do I need to get started?", answer: "A device with a camera, a little space to move, and a FitVibe account. Check the exercise guide so the joints being tracked stay visible." },
+  { question: "Which exercises can I track?", answer: "FitVibe counts squats, push-ups, pull-ups, shoulder presses, and bicep curls. You can also save a custom pose and compare it with your camera view." },
+  { question: "Does FitVibe upload my workout video?", answer: "Workout pose detection runs in your browser. The tracker sends workout summaries to save your progress; it does not upload the camera video." },
+  { question: "How accurate is the feedback?", answer: "Tracking works best with good lighting and a clear view of the required joints. Feedback describes what the camera detects. Camera angle, clothing, and visibility can affect the count." },
+];
+
+function TrackerPreview() {
+  return (
+    <div className="relative mx-auto w-full max-w-lg lg:ml-auto lg:mr-0">
+      <div className="absolute -inset-6 rounded-full bg-yellow-400/5 blur-3xl" aria-hidden="true" />
+      <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-[#141615] shadow-2xl shadow-black/50">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+          <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300"><ScanLine className="h-4 w-4 text-yellow-400" /> Tracker preview</span>
+          <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-zinc-400">Example session</span>
+        </div>
+        <div className="relative h-[340px] overflow-hidden sm:h-[390px]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px)", backgroundSize: "36px 36px" }}>
+          <div className="absolute left-5 top-5 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-xs text-zinc-300">Squat <span className="ml-2 text-yellow-400">•</span></div>
+          <svg viewBox="0 0 400 360" className="h-full w-full" role="img" aria-label="Illustration of a squat with detected shoulder, hip, knee, and ankle points">
+            <ellipse cx="217" cy="328" rx="116" ry="10" fill="#ffffff" fillOpacity=".035" />
+            <g fill="none" stroke="#303530" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M204 106 L184 190 L262 234 L221 310" strokeWidth="38" />
+              <path d="M184 190 L130 233 L161 310" strokeWidth="30" />
+              <path d="M204 117 L252 151 L295 142 M195 117 L237 160 L280 155" strokeWidth="18" />
+              <path d="M219 313 L257 316 M160 313 L191 316" strokeWidth="16" />
+            </g>
+            <circle cx="213" cy="68" r="28" fill="#303530" />
+            <g fill="none" stroke="#facc15" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M204 117 L184 190 L262 234 L221 310 M184 190 L130 233 L161 310 M204 117 L252 151 L295 142" />
+            </g>
+            {[[204,117],[184,190],[262,234],[221,310],[130,233],[161,310],[252,151],[295,142]].map(([cx,cy], i) => <circle key={i} cx={cx} cy={cy} r="5" fill="#facc15" stroke="#141615" strokeWidth="2" />)}
+            <g stroke="#facc15" strokeOpacity=".5" strokeWidth="2" fill="none"><path d="M92 67 V45 H114 M300 45 H322 V67 M92 294 V316 H114 M300 316 H322 V294" /></g>
+          </svg>
+          <div className="absolute bottom-5 left-5 right-5 flex items-center gap-3 rounded-xl border border-yellow-400/20 bg-[#20251b] px-4 py-3 text-sm text-yellow-100"><Check className="h-4 w-4 shrink-0 text-yellow-400" /> Rep counted. Keep going!</div>
+        </div>
+        <div className="flex items-end justify-between border-t border-white/10 px-6 py-5">
+          <div><p className="text-xs uppercase tracking-widest text-zinc-500">Your set</p><p className="mt-1 text-lg font-medium text-white">One rep closer.</p></div>
+          <div className="text-right"><span className="text-4xl font-bold tracking-tight text-yellow-400">08</span><span className="ml-1 text-lg text-zinc-500">/ 12 reps</span></div>
+        </div>
       </div>
     </div>
-  </section>
-);
+  );
+}
 
-// --- Feature/Goals Section ---
-const FeatureGoalsSection = () => (
-  <section className="relative py-32 bg-black flex justify-center items-center overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-purple-500/5 to-black pointer-events-none" />
-    <div className="container mx-auto px-4 flex flex-col md:flex-row items-center gap-20 z-10 relative">
-      {/* Left: Text */}
-      <motion.div
-        initial={{ opacity: 0, x: -40 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        viewport={{ once: true }}
-        className="flex-1 text-left"
-      >
-        <h2 className="text-5xl md:text-6xl font-extrabold text-white mb-8 leading-tight">Set Your Fitness Goals</h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          className="text-2xl text-gray-300 mb-10 max-w-2xl"
-        >
-          Define, track, and achieve your fitness milestones. Whether it&apos;s burning calories, building muscle, or staying consistent, our platform helps you visualize and celebrate your progress.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.4, ease: 'easeOut' }}
-          viewport={{ once: true }}
-        >
-          <Link href="/dashboard">
-            <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-12 py-5 text-2xl rounded-full shadow-lg transition-all duration-200">
-              Get Started
-            </Button>
-          </Link>
-        </motion.div>
-      </motion.div>
-      {/* Right: Glassmorphic Card with Progress */}
-      <motion.div
-        initial={{ opacity: 0, x: 40, scale: 0.95 }}
-        whileInView={{ opacity: 1, x: 0, scale: 1 }}
-        transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-        viewport={{ once: true }}
-        whileHover={{ scale: 1.02, boxShadow: '0 12px 48px 0 rgba(255,255,255,0.12)' }}
-        className="flex-1 max-w-2xl w-full rounded-3xl bg-white/10 backdrop-blur-2xl shadow-2xl border border-white/20 p-10"
-      >
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-white font-bold text-2xl">Weekly Goal</span>
-            <span className="text-yellow-400 font-semibold text-2xl">2,500 cal</span>
-          </div>
-          {/* Progress Chart */}
-          <motion.div
-            initial={{ opacity: 0, scaleY: 0.8 }}
-            whileInView={{ opacity: 1, scaleY: 1 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-            viewport={{ once: true }}
-            className="w-full h-48 bg-gradient-to-tr from-yellow-400/30 via-purple-400/20 to-white/10 rounded-2xl mb-6 flex items-end"
-          >
-            <div className="w-full h-full flex items-end gap-2 px-4 pb-4">
-              {/* Animated chart bars */}
-              {[40, 65, 50, 85, 60, 95, 75].map((h, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ scaleY: 0 }}
-                  whileInView={{ scaleY: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 + i * 0.08, ease: 'easeOut' }}
-                  viewport={{ once: true }}
-                  className="flex-1 bg-gradient-to-t from-yellow-400 to-yellow-300 rounded-t-xl origin-bottom"
-                  style={{ height: `${h}%` }}
-                />
-              ))}
-            </div>
-          </motion.div>
-          <div className="flex justify-between text-lg text-gray-300 mb-4">
-            <span>Mon - Sun</span>
-            <span>357 cal/day avg</span>
-          </div>
-        </div>
-        {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.7, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          className="mt-6"
-        >
-          <div className="font-semibold text-white mb-4 text-xl">Today&apos;s Activity</div>
-          <ul className="text-lg text-gray-200 space-y-3">
-            <li className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3">
-              <span className="flex items-center gap-3"><Flame className="w-5 h-5 text-orange-400" /> Morning Run</span>
-              <span className="text-green-400 font-semibold">+320 cal</span>
-            </li>
-            <li className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3">
-              <span className="flex items-center gap-3"><Zap className="w-5 h-5 text-purple-400" /> HIIT Workout</span>
-              <span className="text-green-400 font-semibold">+450 cal</span>
-            </li>
-            <li className="flex justify-between items-center bg-white/5 rounded-xl px-4 py-3">
-              <span className="flex items-center gap-3"><Activity className="w-5 h-5 text-blue-400" /> Evening Walk</span>
-              <span className="text-green-400 font-semibold">+150 cal</span>
-            </li>
-          </ul>
-        </motion.div>
-      </motion.div>
-    </div>
-  </section>
-);
-
-// --- Main Features Section ---
-const MainFeaturesSection = () => {
-  const features = [
-    { icon: Activity, title: "Smart Tracking", desc: "AI-powered pose detection tracks your workouts in real-time.", color: "from-blue-500 to-cyan-400" },
-    { icon: Trophy, title: "Earn Rewards", desc: "Complete challenges and earn points for exclusive rewards.", color: "from-yellow-400 to-orange-500" },
-    { icon: Users, title: "Community", desc: "Connect with fitness enthusiasts and compete on leaderboards.", color: "from-purple-500 to-pink-500" },
-    { icon: Target, title: "Daily Challenges", desc: "New challenges every day to keep you motivated and engaged.", color: "from-green-400 to-emerald-500" },
-  ];
-
+export function Hero() {
   return (
-    <section className="py-32 bg-gradient-to-b from-zinc-900 via-black to-zinc-900 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-400/5 rounded-full blur-3xl pointer-events-none" />
+    <main id="main-content" className="bg-[#090b09] text-white">
+      <section className="relative overflow-hidden border-b border-white/10">
+        <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-24">
+          <div>
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/5 px-3 py-1.5 text-xs font-medium text-yellow-300"><span className="h-1.5 w-1.5 rounded-full bg-yellow-400" /> YOUR MOVEMENT. YOUR MOMENTUM.</div>
+            <h1 className="max-w-2xl text-5xl font-bold leading-[1.04] tracking-[-0.045em] sm:text-6xl lg:text-7xl xl:text-8xl">Make every<br />rep <span className="text-yellow-400">count.</span></h1>
+            <p className="mt-7 max-w-lg text-lg leading-relaxed text-zinc-400">Turn your camera into a workout companion. Track your reps, take on challenges, and give yourself a reason to show up again.</p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link href="/dashboard" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-yellow-400 px-7 py-3.5 font-bold text-black transition-colors hover:bg-yellow-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow-400">Start your workout <ArrowRight className="h-4 w-4" /></Link>
+              <a href="#how-it-works" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/20 px-6 py-3.5 font-medium text-white transition-colors hover:bg-white/5">See how it works <ChevronDown className="h-4 w-4" /></a>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs text-zinc-500"><span className="flex items-center gap-1.5"><Camera className="h-3.5 w-3.5" /> Use your own camera</span><span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Video stays in your browser</span></div>
+          </div>
+          <TrackerPreview />
+        </div>
+      </section>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.18 } }
-          }}
-          className="text-center mb-20"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }}
-            viewport={{ once: true }}
-            className="text-yellow-400 font-semibold tracking-widest text-xl uppercase mb-4"
-          >Main Features</motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-6xl font-extrabold text-white mb-6"
-          >Everything You Need to Get Fit</motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: 'easeOut' }}
-            viewport={{ once: true }}
-            className="text-xl text-gray-400 max-w-2xl mx-auto"
-          >All the tools you need to stay motivated, track progress, and achieve your fitness goals.</motion.p>
-        </motion.div>
+      <div className="border-b border-white/10 bg-white/[0.02]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-3 px-5 py-6 text-sm sm:px-8">
+          <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Find your movement</span>
+          {['Squats', 'Push-ups', 'Pull-ups', 'Shoulder presses', 'Bicep curls'].map(name => <span key={name} className="flex items-center gap-2 text-zinc-300"><span className="h-1 w-1 rounded-full bg-yellow-400" />{name}</span>)}
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.05, y: -10 }}
-              className="group relative bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 flex flex-col items-center text-center hover:bg-white/10 transition-all duration-300"
-            >
-              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className="w-10 h-10 text-white" />
-              </div>
-              <div className="font-bold text-white text-2xl mb-3">{feature.title}</div>
-              <div className="text-gray-400 text-lg">{feature.desc}</div>
-            </motion.div>
+      <section id="features" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-24">
+        <div className="mb-10 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+          <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400">More than a rep counter</p><h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">A little structure.<br />A lot more motivation.</h2></div>
+          <p className="max-w-sm leading-relaxed text-zinc-400">Keep the feedback clear, the goals achievable, and the next workout worth coming back for.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { icon: ScanLine, title: 'See your movement.', text: 'Follow live rep counts and clear feedback about what the camera can see.', href: '/dashboard', cta: 'Open the tracker', detail: 'LIVE FEEDBACK', value: 'Move. Check. Repeat.' },
+            { icon: Trophy, title: 'Take on a challenge.', text: 'Work through exercise goals and see your progress, one completed set at a time.', href: '/dashboard/challenges', cta: 'Explore challenges', detail: 'BUILD CONSISTENCY', value: 'A goal for your next set.' },
+            { icon: Gift, title: 'Earn your next reward.', text: 'Collect workout tokens, explore the rewards store, and climb the leaderboard.', href: '/dashboard/rewards', cta: 'View rewards', detail: 'KEEP IT REWARDING', value: 'Your effort adds up.' },
+          ].map(({ icon: Icon, title, text, href, cta, detail, value }) => (
+            <article key={title} className="flex flex-col rounded-3xl border border-white/10 bg-[#141614] p-7 transition-colors hover:border-yellow-400/30">
+              <Icon className="mb-8 h-7 w-7 text-yellow-400" strokeWidth={1.5} />
+              <h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 flex-1 text-sm leading-relaxed text-zinc-400">{text}</p>
+              <div className="my-7 rounded-xl border border-white/5 bg-black/20 px-4 py-5"><p className="text-[10px] tracking-widest text-zinc-500">{detail}</p><p className="mt-2 text-sm text-zinc-200">{value}</p></div>
+              <Link href={href} className="flex items-center justify-between text-sm font-semibold text-yellow-300 hover:text-yellow-200">{cta}<ArrowUpRight className="h-4 w-4" /></Link>
+            </article>
           ))}
         </div>
+      </section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-          viewport={{ once: true }}
-          className="text-center mt-16"
-        >
-          <Link href="/dashboard">
-            <Button className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-bold px-14 py-6 text-2xl rounded-full shadow-2xl transition-all duration-200">
-              Start Your Journey <ArrowRight className="ml-3 w-7 h-7" />
-            </Button>
-          </Link>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// --- Testimonials Section ---
-const TestimonialsSection = () => {
-  const testimonials = [
-    { name: "Sarah K.", role: "Lost 20 lbs", text: "FitVibe completely transformed my fitness routine. The AI tracking is incredibly accurate!", avatar: "S" },
-    { name: "Mike R.", role: "Marathon Runner", text: "Daily challenges keep me motivated. I've never been more consistent with my workouts.", avatar: "M" },
-    { name: "Priya T.", role: "Yoga Enthusiast", text: "The community features are amazing. I love competing with friends on the leaderboard!", avatar: "P" },
-  ];
-
-  return (
-    <section className="py-32 bg-black relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-yellow-400/50 to-transparent" />
-
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <div className="text-yellow-400 font-semibold tracking-widest text-xl uppercase mb-4">Testimonials</div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white">Loved by Fitness Enthusiasts</h2>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -5 }}
-              className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold text-xl">
-                  {t.avatar}
-                </div>
-                <div>
-                  <div className="text-white font-bold text-lg">{t.name}</div>
-                  <div className="text-yellow-400 text-sm">{t.role}</div>
-                </div>
-              </div>
-              <p className="text-gray-300 text-lg leading-relaxed">&quot;{t.text}&quot;</p>
-              <div className="flex gap-1 mt-6">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-            </motion.div>
-          ))}
+      <section id="how-it-works" className="scroll-mt-24 border-y border-white/10 bg-white/[0.02]">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400">From camera to progress</p><h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Ready in three simple steps.</h2>
+          <div className="mt-12 grid gap-10 md:grid-cols-3">{steps.map(step => <div key={step.number}><span className="text-4xl font-light text-yellow-400/50">{step.number}</span><h3 className="mt-5 text-xl font-semibold">{step.title}</h3><p className="mt-3 max-w-sm text-sm leading-relaxed text-zinc-400">{step.description}</p></div>)}</div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section id="questions" className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 sm:py-24 md:grid-cols-[1fr_1.4fr]">
+        <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400">Good to know</p><h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Before your first rep.</h2><p className="mt-4 max-w-sm leading-relaxed text-zinc-400">A few answers to help you feel at home.</p></div>
+        <div className="divide-y divide-white/10 border-y border-white/10">{faqs.map(faq => <details key={faq.question} className="group py-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">{faq.question}<ChevronDown className="h-4 w-4 shrink-0 text-zinc-500 transition-transform group-open:rotate-180" /></summary><p className="mt-4 pr-7 text-sm leading-relaxed text-zinc-400">{faq.answer}</p></details>)}</div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+        <div className="flex flex-col items-start justify-between gap-7 rounded-3xl bg-yellow-400 p-8 text-black sm:p-12 md:flex-row md:items-center"><div><Dumbbell className="mb-5 h-7 w-7" /><h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Your next rep starts here.</h2><p className="mt-3 text-black/70">Pick an exercise. Find your rhythm. Make it a habit.</p></div><Link href="/register" className="inline-flex shrink-0 items-center gap-3 rounded-full bg-black px-7 py-4 font-semibold text-white hover:bg-zinc-800">Create your account <ArrowRight className="h-4 w-4" /></Link></div>
+      </section>
+    </main>
   );
-};
-
-// --- CTA Section ---
-const CTASection = () => (
-  <section className="py-24 bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 relative overflow-hidden">
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.8 }}
-      viewport={{ once: true }}
-      className="container mx-auto px-4 text-center"
-    >
-      <h2 className="text-4xl md:text-6xl font-extrabold text-black mb-6">Ready to Transform Your Fitness?</h2>
-      <p className="text-xl text-black/70 mb-10 max-w-2xl mx-auto">Join thousands of users who are already crushing their fitness goals with FitVibe.</p>
-      <Link href="/login">
-        <Button className="bg-black hover:bg-gray-900 text-white font-bold px-14 py-6 text-2xl rounded-full shadow-2xl transition-all duration-200">
-          Get Started Free <ArrowRight className="ml-3 w-7 h-7" />
-        </Button>
-      </Link>
-    </motion.div>
-  </section>
-);
-
-// --- Main Hero Component ---
-export const Hero = () => {
-  return (
-    <div className="relative min-h-screen bg-black overflow-x-hidden">
-      {/* 3D Animated Gym Background & Floating Elements */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <Hero3DBackground />
-
-        {/* Decorative gradient orbs */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 0.6, scale: 1 }}
-          transition={{ duration: 1.5 }}
-          className="absolute top-20 right-20 w-72 h-72 bg-yellow-400 rounded-full blur-[120px] pointer-events-none"
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 0.4, scale: 1 }}
-          transition={{ duration: 1.5, delay: 0.3 }}
-          className="absolute bottom-40 left-20 w-60 h-60 bg-purple-500 rounded-full blur-[100px] pointer-events-none"
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 0.3, scale: 1 }}
-          transition={{ duration: 1.5, delay: 0.6 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500 rounded-full blur-[150px] pointer-events-none"
-        />
-
-        {/* Main Hero Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center w-full px-4 pt-32 pb-24">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-center"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-6 inline-block px-6 py-2 bg-yellow-400/20 border border-yellow-400/30 rounded-full"
-            >
-              <span className="text-yellow-400 font-semibold tracking-wide text-lg">🔥 AI-Powered Fitness Platform</span>
-            </motion.div>
-
-            <h1 className="font-extrabold text-5xl md:text-7xl lg:text-8xl text-white mb-8 tracking-tight leading-tight">
-              THE MODERN WAY<br />
-              <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-400 bg-clip-text text-transparent">TO GET FIT</span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Track workouts with AI pose detection, earn rewards for consistency, and compete with a global community of fitness enthusiasts.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/login">
-                <Button className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-10 py-6 text-xl rounded-full shadow-2xl transition-all duration-200">
-                  Start Free <ArrowRight className="ml-2 w-6 h-6" />
-                </Button>
-              </Link>
-              <Link href="/dashboard/challenges">
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 font-bold px-10 py-6 text-xl rounded-full transition-all duration-200">
-                  View Challenges
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Feature highlights */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
-          >
-            {[
-              { icon: Activity, label: "AI Pose Detection" },
-              { icon: Trophy, label: "Earn Rewards" },
-              { icon: TrendingUp, label: "Track Progress" },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center justify-center gap-3 px-6 py-4 bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl"
-              >
-                <item.icon className="w-6 h-6 text-yellow-400" />
-                <span className="text-white font-medium text-lg">{item.label}</span>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <StatsSection />
-
-      {/* Features/Goals Section */}
-      <FeatureGoalsSection />
-
-      {/* Main Features Section */}
-      <MainFeaturesSection />
-
-      {/* Testimonials Section */}
-      <TestimonialsSection />
-
-      {/* CTA Section */}
-      <CTASection />
-    </div>
-  );
-};
+}

@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { Coins, Star, Package, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from "next/image";
-import { Sidebar } from './sidebar';
 import { useState, useEffect, useCallback } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -101,73 +100,67 @@ export default function RewardsDashboard() {
   };
 
   return (
-    <div className="block sm:flex h-screen bg-background">
-      <div className="w-[100%] sm:w-64 block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="p-4 md:p-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+          <div className="mb-12 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-blue-500">Rewards Store</h1>
-                <p className="text-muted-foreground mt-2">
+                <h1 className="text-4xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Rewards Store</h1>
+                <p className="mt-3 max-w-2xl text-lg text-zinc-400">
                   Redeem your tokens for exclusive rewards
                 </p>
               </div>
-              <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
-                <Coins className="h-5 w-5 text-primary" />
-                <span className="font-semibold">{tokens} tokens</span>
+              <div className="flex w-fit items-center gap-2 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-5 py-3 text-yellow-400">
+                <Coins className="h-5 w-5" />
+                <span className="font-bold">{tokens.toLocaleString()} tokens</span>
               </div>
-            </div>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
             {products.map((product) => {
               const Icon = PRODUCT_ICONS[product.slug] || Package;
               return (
-                <Card key={product.slug} className="overflow-hidden">
-                  <div className="relative h-48">
+                <Card key={product.slug} className="overflow-hidden rounded-3xl border-2 border-white/10 bg-zinc-900/50 text-white shadow-2xl shadow-black/50 backdrop-blur-xl">
+                  <div className="relative h-48 sm:h-56">
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
                       className="h-full w-full object-cover"
                     />
-                    <div className="absolute right-4 top-4 rounded-full bg-background/90 p-2">
-                      <Icon className="h-5 w-5 text-primary" />
+                    <div className="absolute right-4 top-4 rounded-2xl border border-white/10 bg-zinc-900/90 p-3">
+                      <Icon className="h-5 w-5 text-yellow-400" />
                     </div>
                   </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold">{product.name}</h3>
-                      <div className="flex items-center gap-1 text-primary">
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="text-2xl font-bold text-white">{product.name}</h3>
+                      <div className="flex shrink-0 items-center gap-1 rounded-xl border border-yellow-400/20 bg-yellow-400/10 px-3 py-2 font-bold text-yellow-400">
                         <Coins className="h-4 w-4" />
-                        <span>{product.price}</span>
+                        <span>{product.price.toLocaleString()}</span>
                       </div>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-3 text-sm leading-relaxed text-zinc-400">
                       {product.description}
                     </p>
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium">Features:</h4>
+                    <div className="mt-6">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Features</h4>
                       <ul className="mt-2 space-y-2">
                         {product.features.map((feature) => (
                           <li
                             key={feature}
-                            className="flex items-center gap-2 text-sm text-muted-foreground"
+                            className="flex items-center gap-2 text-sm text-zinc-300"
                           >
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-yellow-400" />
                             {feature}
                           </li>
                         ))}
                       </ul>
                     </div>
                     <Button
-                      className="mt-4 w-full"
+                      className="mt-8 w-full rounded-2xl bg-yellow-400 py-6 text-base font-black text-black shadow-xl shadow-yellow-500/20 hover:bg-yellow-300"
                       onClick={() => handlePurchase(product)}
-                      disabled={product.price > tokens}
+                      disabled={isLoading || product.price > tokens}
                     >
-                      {product.price > tokens ? 'Not Enough Tokens' : isLoading ? "Redeeming..." : 'Redeem Now'}
+                      {isLoading ? 'REDEEMING...' : product.price > tokens ? 'NOT ENOUGH TOKENS' : 'REDEEM NOW'}
                     </Button>
                   </div>
                 </Card>
@@ -176,6 +169,5 @@ export default function RewardsDashboard() {
           </div>
         </div>
       </main>
-    </div>
   );
 }

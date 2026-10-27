@@ -1,29 +1,21 @@
-import PoseCreation from "@/components/dashboard/pose-creation";
-import { Sidebar } from '@/components/dashboard/sidebar'
-import React from 'react'
+import PoseCreation from '@/components/dashboard/pose-creation';
 
-const Challenges = () => {
+export default function AddPosePage() {
   return (
-    <div className="block sm:flex h-screen bg-background">
-      <div className="w-[100%] sm:w-64 block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-blue-500">Add New Pose</h1>
-            <p className="text-muted-foreground mt-2">
-              Add your custom new pose
-            </p>
-          </div>
-          <div className="grid gap-6">
-            <PoseCreation />
-          </div>
+    <main className="p-4 md:p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12">
+          <h1 className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-4xl font-black text-transparent">
+            Add New Pose
+          </h1>
+          <p className="mt-3 max-w-2xl text-lg text-zinc-400">
+            Upload an image to create a custom pose for your workouts.
+          </p>
         </div>
-      </main>
-    </div>
-
-  )
+        <div className="max-w-3xl">
+          <PoseCreation />
+        </div>
+      </div>
+    </main>
+  );
 }
-
-export default Challenges

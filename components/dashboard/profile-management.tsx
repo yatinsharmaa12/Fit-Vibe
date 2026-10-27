@@ -67,10 +67,10 @@ export default function UpdateProfileForm() {
   }
 
   return (
-    <Card className="w-full max-w-lg mx-auto">
+    <Card className="w-full max-w-2xl rounded-3xl border-2 border-white/10 bg-zinc-900/50 text-white shadow-2xl shadow-black/50 backdrop-blur-xl">
       <CardHeader>
-        <CardTitle>Update Profile</CardTitle>
-        <CardDescription>Change your profile information here.</CardDescription>
+        <CardTitle className="text-2xl font-bold text-white">Update Profile</CardTitle>
+        <CardDescription className="text-zinc-400">Change your profile information here.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -86,7 +86,7 @@ export default function UpdateProfileForm() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="border-white/10 bg-zinc-950 text-white" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -101,7 +101,7 @@ export default function UpdateProfileForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled />
+                    <Input {...field} disabled className="border-white/10 bg-zinc-950 text-zinc-400" />
                   </FormControl>
                 </FormItem>
               )}
@@ -117,7 +117,7 @@ export default function UpdateProfileForm() {
                 <FormItem>
                   <FormLabel>Current Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" {...field} className="border-white/10 bg-zinc-950 text-white" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,13 +133,13 @@ export default function UpdateProfileForm() {
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" {...field} className="border-white/10 bg-zinc-950 text-white" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full rounded-2xl bg-yellow-400 py-6 font-black text-black hover:bg-yellow-300" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Profile"}
             </Button>
           </form>

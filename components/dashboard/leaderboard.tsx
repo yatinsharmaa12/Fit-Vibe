@@ -7,8 +7,10 @@ import { Medal, Trophy, Crown, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from "react"
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface User {
+  id: string;
   name: string;
   points: number;
   image?: string;
@@ -17,7 +19,7 @@ interface User {
 
 const DEFAULT_AVATAR = "https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg"
 
-export function Leaderboard() {
+export function Leaderboard({ showFullLink = true }: { showFullLink?: boolean }) {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { data: session } = useSession();
@@ -47,7 +49,7 @@ export function Leaderboard() {
             <Trophy className="w-5 h-5 text-yellow-500" />
             Top Performers
           </h2>
-          <p className="text-zinc-400 text-sm mt-1">Weekly Leaderboard</p>
+          <p className="text-zinc-400 text-sm mt-1">All-time leaderboard</p>
         </div>
         <Button
           variant="ghost"
@@ -82,7 +84,7 @@ export function Leaderboard() {
 
               return (
                 <div
-                  key={user.name}
+                  key={user.id}
                   className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors group"
                 >
                   <div className="flex items-center gap-4">
@@ -124,11 +126,13 @@ export function Leaderboard() {
         )}
       </div>
 
-      <div className="p-4 border-t border-white/10 bg-zinc-950/50 text-center">
-        <Button variant="link" className="text-yellow-500 text-sm hover:text-yellow-400">
-          View Full Leaderboard
-        </Button>
-      </div>
+      {showFullLink && (
+        <div className="p-4 border-t border-white/10 bg-zinc-950/50 text-center">
+          <Button asChild variant="link" className="text-yellow-500 text-sm hover:text-yellow-400">
+            <Link href="/dashboard/leaderboard">View Full Leaderboard</Link>
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }

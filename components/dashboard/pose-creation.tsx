@@ -1,8 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
-import * as posedetection from "@tensorflow-models/pose-detection";
-import "@tensorflow/tfjs-backend-webgl";
-import * as tf from "@tensorflow/tfjs";
+import type * as posedetection from "@tensorflow-models/pose-detection";
+import { loadPoseEngine } from "@/lib/pose-engine";
 import { toast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
 import { Button } from "../ui/button";
@@ -12,23 +11,36 @@ export default function PoseCreation() {
   const [detector, setDetector] = useState<posedetection.PoseDetector | null>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
   const [poseData, setPoseData] = useState<posedetection.Pose | null>(null);
+  const [detectorError, setDetectorError] = useState(false);
+  const poseLibraryRef = useRef<typeof posedetection | null>(null);
+  const hasImage = Boolean(imageURL);
   const imageRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { data: session } = useSession();
 
-  // Initialize the pose detector.
+  // Loading an image is the first point where inference is needed.
   useEffect(() => {
+    if (!hasImage) return;
+    let disposed = false;
+    let instance: posedetection.PoseDetector | null = null;
     async function initDetector() {
-      await tf.ready();
-      const detectorConfig = { modelType: posedetection.movenet.modelType.SINGLEPOSE_LIGHTNING };
-      const detectorInstance = await posedetection.createDetector(
-        posedetection.SupportedModels.MoveNet,
-        detectorConfig
-      );
-      setDetector(detectorInstance);
+      try {
+        const pose = await loadPoseEngine();
+        if (disposed) return;
+        poseLibraryRef.current = pose;
+        instance = await pose.createDetector(pose.SupportedModels.MoveNet, {
+          modelType: pose.movenet.modelType.SINGLEPOSE_LIGHTNING,
+        });
+        if (disposed) { instance.dispose(); return; }
+        setDetector(instance);
+      } catch (error) {
+        console.error('Pose detector failed to load:', error);
+        if (!disposed) setDetectorError(true);
+      }
     }
     initDetector();
-  }, []);
+    return () => { disposed = true; instance?.dispose(); };
+  }, [hasImage]);
 
   // Handle image upload.
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +93,8 @@ export default function PoseCreation() {
         }
       });
       // Draw skeleton.
-      const adjacentPairs = posedetection.util.getAdjacentPairs(posedetection.SupportedModels.MoveNet);
+      const poseLibrary = poseLibraryRef.current;
+      const adjacentPairs = poseLibrary ? poseLibrary.util.getAdjacentPairs(poseLibrary.SupportedModels.MoveNet) : [];
       adjacentPairs.forEach(([i, j]) => {
         const kp1 = poseData.keypoints[i];
         const kp2 = poseData.keypoints[j];
@@ -162,26 +175,28 @@ export default function PoseCreation() {
   };
 
   return (
-    <Card className="p-4">
+    <Card className="rounded-3xl border-2 border-white/10 bg-zinc-900/50 p-6 text-white shadow-2xl shadow-black/50 backdrop-blur-xl md:p-8">
       <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2">Create New Pose from Image</h2>
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
+        <h2 className="mb-2 text-2xl font-bold text-white">Create New Pose from Image</h2>
+        <p className="mb-5 text-sm text-zinc-400">Choose a clear image with your body in frame.</p>
+        <input type="file" accept="image/*" onChange={handleImageUpload} className="w-full text-sm text-zinc-300 file:mr-4 file:rounded-xl file:border-0 file:bg-yellow-400 file:px-4 file:py-2 file:font-bold file:text-black hover:file:bg-yellow-300" />
       </div>
       {imageURL && (
         <div className="mb-4">
-          <div className="relative">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
             <canvas ref={canvasRef} className="w-full h-auto" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img ref={imageRef} style={{ display: "none" }} alt="Uploaded" />
           </div>
-          <div className="mt-2 flex gap-2">
-            <Button onClick={detectPoseFromImage}>Detect Pose</Button>
-            <Button onClick={handleSavePose}>Save Pose</Button>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button onClick={detectPoseFromImage} disabled={!detector} className="rounded-xl bg-yellow-400 font-bold text-black hover:bg-yellow-300">{detectorError ? 'Tracker unavailable' : detector ? 'Detect Pose' : 'Loading tracker…'}</Button>
+            <Button onClick={handleSavePose} variant="outline" className="rounded-xl border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white">Save Pose</Button>
           </div>
+          {detectorError && <p role="alert" className="mt-3 text-sm text-red-400">The pose tracker could not load. Refresh the page to try again.</p>}
         </div>
       )}
       {!imageURL && (
-        <p className="text-muted-foreground">Upload an image to create a new pose.</p>
+        <p className="text-zinc-400">Upload an image to create a new pose.</p>
       )}
     </Card>
   );
