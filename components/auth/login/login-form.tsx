@@ -69,28 +69,14 @@ export function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="flex flex-col items-center gap-3 text-center mb-2">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-2 shadow-lg shadow-blue-500/20">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-8 w-8 text-white" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        </div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-          Welcome Back
-        </h1>
-        <p className="text-balance text-sm text-muted-foreground max-w-sm">
-          Sign in to continue your fitness journey and track your progress
-        </p>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400">Ready for your next rep?</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white">Log in to FitVibe</h1>
+        <p className="text-sm leading-relaxed text-zinc-400">Pick up where you left off. Your next goal is waiting.</p>
       </div>
 
       {error && (
-        <div className="p-4 text-sm text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-900 flex items-center gap-2">
+        <div role="alert" className="flex items-center gap-2 rounded-xl border border-red-400/20 bg-red-400/10 p-4 text-sm text-red-300">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
@@ -103,46 +89,43 @@ export function LoginForm({
           <Label htmlFor="email" className="text-sm font-medium">Email</Label>
           <Input
             id="email"
+            autoComplete="email"
             type="email"
             placeholder="me@example.com"
             required
             disabled={isLoading}
             value={formData.email}
             onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            className="h-11 bg-white dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-blue-500 focus:ring-blue-500"
+            className="h-12 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
           />
         </div>
 
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-            <a
-              href="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-            >
-              Forgot password?
-            </a>
+
           </div>
           <Input
             id="password"
+            autoComplete="current-password"
             type="password"
             placeholder="••••••••"
             required
             disabled={isLoading}
             value={formData.password}
             onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-            className="h-11 bg-white dark:bg-gray-950 border-gray-300 dark:border-gray-700 focus:border-blue-500 focus:ring-blue-500"
+            className="h-12 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
           />
         </div>
 
         <Button
           type="submit"
-          className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg shadow-blue-500/30 transition-all hover:shadow-xl hover:shadow-blue-500/40"
+          className="h-12 w-full rounded-full bg-yellow-400 font-bold text-black hover:bg-yellow-300"
           disabled={isLoading}
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -155,10 +138,10 @@ export function LoginForm({
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300 dark:border-gray-700" />
+            <span className="w-full border-t border-white/10" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white dark:bg-gray-950 px-2 text-muted-foreground">
+            <span className="bg-[#141614] px-3 text-zinc-500">
               Or continue with
             </span>
           </div>
@@ -168,7 +151,7 @@ export function LoginForm({
           type="button"
           variant="outline"
           onClick={handleGoogleLogin}
-          className="w-full h-11 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+          className="h-12 w-full rounded-full border-white/15 bg-transparent text-white hover:bg-white/5 hover:text-white"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -197,9 +180,9 @@ export function LoginForm({
         </Button>
       </div>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-zinc-400">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors">
+        <Link href="/register" className="font-medium text-yellow-400 hover:text-yellow-300 hover:underline">
           Sign up
         </Link>
       </p>

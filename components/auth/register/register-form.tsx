@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,15 +157,16 @@ export function RegisterForm({
       className={cn("flex flex-col gap-6", className)}
       {...props}
     >
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Create an account</h1>
-        <p className="text-balance text-sm text-muted-foreground">
-          Enter your details below to create your account
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400">Your first step starts here</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white">Create your account</h1>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          Join FitVibe and make every rep count.
         </p>
       </div>
 
       {errors.submit && (
-        <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div role="alert" className="rounded-xl border border-red-400/20 bg-red-400/10 p-3 text-sm text-red-300">
           {errors.submit}
         </div>
       )}
@@ -173,7 +175,9 @@ export function RegisterForm({
         <div className="grid gap-2">
           <Label htmlFor="name">Name</Label>
           <Input
+            className="h-12 min-w-0 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
             id="name"
+            autoComplete="name"
             type="text"
             placeholder="Your Full Name"
             required
@@ -183,14 +187,16 @@ export function RegisterForm({
             aria-invalid={!!errors.name}
           />
           {errors.name && (
-            <p className="text-sm text-red-500">{errors.name}</p>
+            <p className="text-sm text-red-300">{errors.name}</p>
           )}
         </div>
 
         <div className="grid gap-2">
           <Label htmlFor="identifier">Email</Label>
           <Input
+            className="h-12 min-w-0 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
             id="identifier"
+            autoComplete="email"
             type="email"
             placeholder="example@gmail.com"
             required
@@ -200,18 +206,21 @@ export function RegisterForm({
             aria-invalid={!!errors.identifier}
           />
           {errors.identifier && (
-            <p className="text-sm text-red-500">{errors.identifier}</p>
+            <p className="text-sm text-red-300">{errors.identifier}</p>
           )}
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="otp">OTP</Label>
+          <Label htmlFor="otp">Email verification code</Label>
           <div className="flex gap-2">
             <Input
+            className="h-12 min-w-0 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
               id="otp"
+            autoComplete="one-time-code"
               placeholder="Enter 6-digit OTP"
               type="text"
               maxLength={6}
+              inputMode="numeric"
               required
               value={formData.otp}
               onChange={handleChange}
@@ -222,13 +231,13 @@ export function RegisterForm({
               type="button"
               onClick={sendOtp}
               disabled={isLoading || !formData.identifier}
-              className="whitespace-nowrap"
+              className="h-12 shrink-0 rounded-xl border border-yellow-400/20 bg-yellow-400/10 px-4 text-yellow-300 hover:bg-yellow-400/20"
             >
               {isLoading ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
             </Button>
           </div>
           {errors.otp && (
-            <p className="text-sm text-red-500">{errors.otp}</p>
+            <p className="text-sm text-red-300">{errors.otp}</p>
           )}
           {devOtp && (
             <p className="text-sm text-amber-600">
@@ -240,7 +249,9 @@ export function RegisterForm({
         <div className="grid gap-2">
           <Label htmlFor="password">Password</Label>
           <Input
+            className="h-12 min-w-0 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
             id="password"
+            autoComplete="new-password"
             type="password"
             required
             value={formData.password}
@@ -249,14 +260,16 @@ export function RegisterForm({
             aria-invalid={!!errors.password}
           />
           {errors.password && (
-            <p className="text-sm text-red-500">{errors.password}</p>
+            <p className="text-sm text-red-300">{errors.password}</p>
           )}
         </div>
 
         <div className="grid gap-2">
           <Label htmlFor="cpassword">Confirm Password</Label>
           <Input
+            className="h-12 min-w-0 rounded-xl border-white/15 bg-black/20 text-white placeholder:text-zinc-500 focus-visible:ring-yellow-400"
             id="cpassword"
+            autoComplete="new-password"
             type="password"
             required
             value={formData.cpassword}
@@ -265,23 +278,23 @@ export function RegisterForm({
             aria-invalid={!!errors.cpassword}
           />
           {errors.cpassword && (
-            <p className="text-sm text-red-500">{errors.cpassword}</p>
+            <p className="text-sm text-red-300">{errors.cpassword}</p>
           )}
         </div>
 
         <Button
           type="submit"
-          className="w-full"
+          className="h-12 w-full rounded-full bg-yellow-400 font-bold text-black hover:bg-yellow-300"
           disabled={isLoading}
         >
           {isLoading ? "Creating account..." : "Create account"}
         </Button>
 
         <div className="relative text-center">
-          <span className="bg-background px-2 text-muted-foreground text-sm relative z-10">
+          <span className="bg-[#141614] px-3 text-zinc-500 text-xs uppercase relative z-10">
             Or continue with
           </span>
-          <div className="absolute inset-0 top-1/2 border-t border-border -z-10" />
+          <div className="absolute inset-0 top-1/2 border-t border-white/10" />
         </div>
 
         <Button
@@ -289,7 +302,7 @@ export function RegisterForm({
           variant="outline"
           onClick={handleGoogleLogin}
           disabled={isLoading}
-          className="w-full"
+          className="h-12 w-full rounded-full border-white/15 bg-transparent text-white hover:bg-white/5 hover:text-white"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -305,11 +318,11 @@ export function RegisterForm({
         </Button>
       </div>
 
-      <div className="text-center text-sm">
+      <div className="text-center text-sm text-zinc-400">
         Already have an account?{" "}
-        <a href="/login" className="underline underline-offset-4 hover:text-primary">
+        <Link href="/login" className="font-medium text-yellow-400 hover:text-yellow-300 hover:underline">
           Sign in
-        </a>
+        </Link>
       </div>
     </form>
   );
