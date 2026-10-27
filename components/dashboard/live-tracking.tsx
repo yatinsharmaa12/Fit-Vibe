@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { ExerciseType, useExerciseCounter } from "@/hooks/useExerciseCounter";
 import { useEffect, useRef } from "react";
+import { EXERCISE_GUIDES } from "@/lib/exercise-counter";
 import { Button } from "../ui/button";
 import { Camera, Activity, Volume2 } from "lucide-react";
 
@@ -66,6 +67,8 @@ export function LiveTracking() {
     "Bicep Curl",
     "Custom Pose",
   ];
+  const guide = currExercise && currExercise !== "Custom Pose" ? EXERCISE_GUIDES[currExercise] : null;
+  const canStart = Boolean(currExercise && (currExercise !== "Custom Pose" || selectedCustomPose));
 
   return (
     <Card className="overflow-hidden border-0 shadow-2xl bg-zinc-900 ring-1 ring-white/10 rounded-3xl">
@@ -105,6 +108,36 @@ export function LiveTracking() {
           </Button>
         ))}
       </div>
+
+      {/* Show the actual counting rules before the camera starts. */}
+      <section className="p-5 md:p-6 border-b border-white/10 bg-zinc-950" aria-label="Exercise guide">
+        <h3 className="text-lg font-bold text-yellow-400">Before you start: {currExercise || "choose an exercise"}</h3>
+        {guide ? (
+          <div className="mt-3 grid gap-4 text-sm text-zinc-200 md:grid-cols-2">
+            <div>
+              <p><span className="font-semibold text-white">Joints tracked:</span> {guide.joints}</p>
+              <p className="mt-2"><span className="font-semibold text-white">Movement measured:</span> {guide.movement}</p>
+              <p className="mt-2"><span className="font-semibold text-white">Camera:</span> {guide.camera}</p>
+            </div>
+            <div>
+              <ol className="list-inside list-decimal space-y-1">
+                <li>{guide.start}</li>
+                <li>{guide.middle}</li>
+                <li>{guide.end}</li>
+              </ol>
+              <p className="mt-2 text-zinc-400">
+                Tracking checks: at least {guide.minimumRange}° of {guide.joint} movement;
+                {` ${(guide.minimumMs / 1000).toFixed(1)}–${guide.maximumMs / 1000}`} seconds per rep.
+              </p>
+            </div>
+          </div>
+        ) : currExercise === "Custom Pose" ? (
+          <p className="mt-2 text-sm text-zinc-300">Select a saved pose, then keep your body in frame. Custom poses show similarity; they do not count workout reps.</p>
+        ) : (
+          <p className="mt-2 text-sm text-zinc-300">Choose an exercise above to see the joints, movement and rep rules before enabling the camera.</p>
+        )}
+        <p className="mt-3 text-xs text-zinc-500">These camera thresholds describe how the app counts movement. They are not a medical assessment of exercise form.</p>
+      </section>
 
       {/* Custom Pose Selector */}
       {currExercise === "Custom Pose" && customPoses.length > 0 && (
@@ -149,9 +182,10 @@ export function LiveTracking() {
               <Button
                 size="lg"
                 onClick={toggleCamera}
+                disabled={!canStart}
                 className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-10 py-6 text-xl rounded-full shadow-lg hover:shadow-yellow-500/25 transition-all"
               >
-                Start Flexing
+                {canStart ? "Start Flexing" : "Select Exercise First"}
               </Button>
             </div>
           )}
@@ -171,11 +205,14 @@ export function LiveTracking() {
             <>
               <div className="absolute top-4 left-4 z-30 flex flex-col gap-2">
                 <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${formScore >= 80 ? "bg-green-500" : "bg-red-500"} animate-pulse`} />
+                  <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
                   <span className="text-white font-medium text-sm">{liveFeedback || "Detecting..."}</span>
                 </div>
+                {currExercise === "Custom Pose" && selectedCustomPose && (
+                  <span className="text-xs text-zinc-300 bg-black/60 px-3 py-1.5 rounded-lg w-fit">Pose similarity: {formScore}%</span>
+                )}
                 {repFeedback && (
-                  <div className="bg-yellow-500 text-black font-bold px-3 py-1.5 rounded-lg text-sm shadow-lg">
+                  <div className="bg-yellow-500 text-black font-bold px-3 py-1.5 rounded-lg text-sm shadow-lg" role="status" aria-live="polite">
                     {repFeedback}
                   </div>
                 )}

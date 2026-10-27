@@ -35,19 +35,19 @@ describe('getAngle', () => {
 
 describe('evaluateExercise', () => {
   it('counts a bicep curl only after a full down/up cycle', () => {
-    let state = createCounterState();
+    const state = createCounterState();
 
-    const extended = evaluateExercise('Bicep Curl', armsAt(165), state);
+    const extended = evaluateExercise('Bicep Curl', armsAt(165), state, 1000);
     expect(extended.countedKey).toBeNull();
 
-    const curled = evaluateExercise('Bicep Curl', armsAt(30), extended.phase);
+    const curled = evaluateExercise('Bicep Curl', armsAt(30), extended.phase, 1200);
     expect(curled.countedKey).toBeNull();
 
-    const finished = evaluateExercise('Bicep Curl', armsAt(165), curled.phase);
+    const finished = evaluateExercise('Bicep Curl', armsAt(165), curled.phase, 2200);
     expect(finished.countedKey).toBe('bicepCurl');
 
     // A second frame in the up position must not double count.
-    const repeat = evaluateExercise('Bicep Curl', armsAt(165), finished.phase);
+    const repeat = evaluateExercise('Bicep Curl', armsAt(165), finished.phase, 2300);
     expect(repeat.countedKey).toBeNull();
   });
 
@@ -59,11 +59,54 @@ describe('evaluateExercise', () => {
       return keypoints;
     };
 
-    const down = evaluateExercise('Squat', keypointsFor(70), createCounterState());
+    const standing = evaluateExercise('Squat', keypointsFor(170), createCounterState(), 1000);
+    const down = evaluateExercise('Squat', keypointsFor(70), standing.phase, 1200);
     expect(down.countedKey).toBeNull();
 
-    const up = evaluateExercise('Squat', keypointsFor(170), down.phase);
+    const up = evaluateExercise('Squat', keypointsFor(170), down.phase, 2200);
     expect(up.countedKey).toBe('squat');
+  });
+
+  it('explains why a shallow bend did not count', () => {
+    const start = evaluateExercise('Bicep Curl', armsAt(165), createCounterState(), 1000);
+    const partial = evaluateExercise('Bicep Curl', armsAt(95), start.phase, 1200);
+    const returned = evaluateExercise('Bicep Curl', armsAt(165), partial.phase, 2200);
+    expect(returned.countedKey).toBeNull();
+    expect(returned.missedRepReason).toMatch(/too shallow/i);
+    expect(returned.missedRepReason).toContain('50°');
+  });
+
+  it('rejects a movement that finishes too quickly', () => {
+    const start = evaluateExercise('Bicep Curl', armsAt(165), createCounterState(), 1000);
+    const middle = evaluateExercise('Bicep Curl', armsAt(30), start.phase, 1200);
+    const returned = evaluateExercise('Bicep Curl', armsAt(165), middle.phase, 1300);
+    expect(returned.countedKey).toBeNull();
+    expect(returned.missedRepReason).toMatch(/too quick/i);
+  });
+
+  it('requires the stated minimum movement range', () => {
+    const kneesAt = (degrees: number) => {
+      const keypoints = baseKeypoints();
+      setAngle(keypoints, 11, 13, 15, degrees);
+      setAngle(keypoints, 12, 14, 16, degrees);
+      return keypoints;
+    };
+    const start = evaluateExercise('Squat', kneesAt(162), createCounterState(), 1000);
+    const middle = evaluateExercise('Squat', kneesAt(88), start.phase, 1200);
+    const returned = evaluateExercise('Squat', kneesAt(162), middle.phase, 2200);
+    expect(returned.countedKey).toBeNull();
+    expect(returned.missedRepReason).toMatch(/at least 75°/);
+  });
+
+  it.each([
+    ['Push-Up', 170, 70, 'pushup'],
+    ['Pull-Up', 170, 30, 'pullup'],
+    ['Shoulder Press', 90, 170, 'shoulderPress'],
+  ] as const)('counts a complete %s cycle', (exercise, startAngle, middleAngle, expectedKey) => {
+    const start = evaluateExercise(exercise, armsAt(startAngle), createCounterState(), 1000);
+    const middle = evaluateExercise(exercise, armsAt(middleAngle), start.phase, 1200);
+    const returned = evaluateExercise(exercise, armsAt(startAngle), middle.phase, 2200);
+    expect(returned.countedKey).toBe(expectedKey);
   });
 
   it('does not count when keypoints are unreliable', () => {
@@ -71,6 +114,7 @@ describe('evaluateExercise', () => {
     const result = evaluateExercise('Bicep Curl', keypoints, createCounterState());
     expect(result.countedKey).toBeNull();
     expect(result.score).toBe(0);
+    expect(result.feedback).toMatch(/clearly visible/i);
   });
 });
 

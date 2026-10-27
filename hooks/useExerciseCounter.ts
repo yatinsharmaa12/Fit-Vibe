@@ -61,6 +61,7 @@ export function useExerciseCounter() {
   const [formScore, setFormScore] = useState<number>(0);
 
   const counterStateRef = useRef(createCounterState());
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const countsRef = useRef<ExerciseCounts>(exerciseCounts);
   const lastSubmittedRef = useRef<ExerciseCounts>({
@@ -160,10 +161,21 @@ export function useExerciseCounter() {
   }, [enableDetection]);
 
   useEffect(() => {
-    if (enableDetection && !currExercise) {
-      setCurrExercise("Bicep Curl");
-    }
-  }, [enableDetection, currExercise]);
+    counterStateRef.current = createCounterState();
+    setLiveFeedback("");
+    setRepFeedback("");
+    setFormScore(0);
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+  }, [currExercise]);
+
+  useEffect(() => {
+    counterStateRef.current = createCounterState();
+    if (!enableDetection) setLiveFeedback("");
+  }, [enableDetection]);
+
+  useEffect(() => () => {
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+  }, []);
 
   const drawPose = useCallback((pose: posedetection.Pose) => {
     if (!canvasRef.current) return;
@@ -201,11 +213,16 @@ export function useExerciseCounter() {
     ctx.restore();
   }, []);
 
-  const registerRep = useCallback((key: ExerciseKey, score: number) => {
-    setExerciseCounts((prev) => ({ ...prev, [key]: prev[key] + 1 }));
-    setRepFeedback(score >= 90 ? "Good form, keep going!" : "Try to improve your form!");
-    setTimeout(() => setRepFeedback(""), 5000);
+  const showRepFeedback = useCallback((message: string) => {
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    setRepFeedback(message);
+    feedbackTimerRef.current = setTimeout(() => setRepFeedback(""), 4000);
   }, []);
+
+  const registerRep = useCallback((key: ExerciseKey) => {
+    setExerciseCounts((prev) => ({ ...prev, [key]: prev[key] + 1 }));
+    showRepFeedback("Rep counted. Keep going!");
+  }, [showRepFeedback]);
 
   useEffect(() => {
     if (!poseDetector || !enableDetection || !videoRef.current) return;
@@ -244,22 +261,31 @@ export function useExerciseCounter() {
               );
               counterStateRef.current = evaluation.phase;
               computedScore = evaluation.score;
+              setLiveFeedback(evaluation.feedback);
               if (evaluation.countedKey) {
-                registerRep(evaluation.countedKey, evaluation.score);
+                registerRep(evaluation.countedKey);
+              } else if (evaluation.missedRepReason) {
+                showRepFeedback(evaluation.missedRepReason);
               }
             } else if (currExercise === "Custom Pose" && selectedCustomPose) {
               const similarity = poseSimilarity(keypoints, selectedCustomPose.keypoints);
               if (similarity !== null) {
                 computedScore = similarity;
-                setRepFeedback(similarity > 80 ? "Pose matched!" : "Adjust pose...");
+                setLiveFeedback(similarity > 80 ? "Pose matched!" : "Adjust your position to match the saved pose.");
               } else {
-                setRepFeedback("Move fully into frame");
+                setLiveFeedback("Cannot compare poses: move fully into frame.");
               }
+            } else {
+              setLiveFeedback("Select a saved custom pose to begin matching.");
             }
 
             setFormScore(computedScore);
-            setLiveFeedback(`Form score: ${computedScore}%`);
             drawPose(pose);
+          } else {
+            setLiveFeedback("Cannot count: no person detected. Move into the camera frame.");
+            setFormScore(0);
+            const canvas = canvasRef.current;
+            if (canvas) canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
           }
         } catch (error) {
           console.error("Pose inference error:", error);
@@ -277,7 +303,7 @@ export function useExerciseCounter() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [poseDetector, enableDetection, currExercise, selectedCustomPose, drawPose, registerRep]);
+  }, [poseDetector, enableDetection, currExercise, selectedCustomPose, drawPose, registerRep, showRepFeedback]);
 
   const submitPendingWorkouts = useCallback(async () => {
     if (submittingRef.current) return;
